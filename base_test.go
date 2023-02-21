@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"githua/any-call/gobase/util/mylist"
+	"github/any-call/gobase/util/mylist"
 	"testing"
 )
 

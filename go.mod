@@ -1,3 +1,3 @@
-module githua/any-call/gobase
+module github/any-call/gobase
 
 go 1.19
