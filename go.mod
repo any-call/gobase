@@ -1,3 +1,3 @@
-module github/any-call/gobase
+module github.com/any-call/gobase
 
-go 1.19
+go 1.18
