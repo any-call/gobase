@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/any-call/gobase/util/mylist"
+	"github.com/any-call/gobase/util/myvalidator"
 	"testing"
 )
 
@@ -35,4 +36,18 @@ func TestList_removeDuplicItem(t *testing.T) {
 	a1 := mylist.RemoveDuplicItem[string](a)
 	t.Log("a:", a)
 	t.Log("a1:", a1)
+}
+
+func Test_ValidFqdn(t *testing.T) {
+	b1 := myvalidator.ValidFqdn("baidu.com")
+	b2 := myvalidator.ValidFqdn("aa.baidu.com")
+	t.Log("b1", b1)
+	t.Log("b2", b2)
+}
+
+func Test_ValidEmail(t *testing.T) {
+	b1 := myvalidator.ValidEmail("baidu.com")
+	b2 := myvalidator.ValidEmail("12121212@cccc.com")
+	t.Log("b1", b1)
+	t.Log("b2", b2)
 }
