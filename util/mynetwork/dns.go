@@ -60,7 +60,7 @@ func LookupTXT(domain string) (txt []string, err error) {
 	return net.LookupTXT(domain)
 }
 
-func DigWithNS(domain string, timeout time.Duration) (nss []string) {
+func DigNS(domain string, timeout time.Duration) (nss []string) {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 	//准备参数
