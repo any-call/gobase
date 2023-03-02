@@ -89,3 +89,5 @@ func RemoveDuplicItem[E comparable](list []E) []E {
 
 	return ret
 }
+
+//比较两个数组元素
