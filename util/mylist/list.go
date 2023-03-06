@@ -8,11 +8,11 @@ import (
 )
 
 type List[E comparable] struct {
-	sync.RWMutex
+	lock sync.RWMutex
 	list []*node[E]
 }
 
-func New[E comparable]() *List[E] {
+func NewList[E comparable]() *List[E] {
 	return new(List[E]).init()
 }
 
@@ -23,22 +23,22 @@ func (l *List[E]) init() *List[E] {
 }
 
 func (l *List[E]) Append(item E) {
-	l.Lock()
-	defer l.Unlock()
+	l.lock.Lock()
+	defer l.lock.Unlock()
 
 	l.list = append(l.list, newNode[E](item))
 }
 
 func (l *List[E]) PreAppend(item E) {
-	l.Lock()
-	defer l.Unlock()
+	l.lock.Lock()
+	defer l.lock.Unlock()
 
 	l.list = append([]*node[E]{newNode(item)}, l.list...)
 }
 
 func (l *List[E]) Insert(index int, item E) error {
-	l.Lock()
-	defer l.Unlock()
+	l.lock.Lock()
+	defer l.lock.Unlock()
 
 	if b := l.isValidIndex(index); !b {
 		return errors.New("outside of range")
@@ -49,8 +49,8 @@ func (l *List[E]) Insert(index int, item E) error {
 }
 
 func (l *List[E]) RemoveAt(index int) error {
-	l.Lock()
-	defer l.Unlock()
+	l.lock.Lock()
+	defer l.lock.Unlock()
 
 	if b := l.isValidIndex(index); !b {
 		return errors.New("outside of range")
@@ -61,8 +61,8 @@ func (l *List[E]) RemoveAt(index int) error {
 }
 
 func (l *List[E]) RemoveFirst() error {
-	l.Lock()
-	defer l.Unlock()
+	l.lock.Lock()
+	defer l.lock.Unlock()
 
 	if len(l.list) == 0 {
 		return errors.New("empty range")
@@ -73,8 +73,8 @@ func (l *List[E]) RemoveFirst() error {
 }
 
 func (l *List[E]) RemoveLast() error {
-	l.Lock()
-	defer l.Unlock()
+	l.lock.Lock()
+	defer l.lock.Unlock()
 
 	if len(l.list) == 0 {
 		return errors.New("empty range")
@@ -85,8 +85,8 @@ func (l *List[E]) RemoveLast() error {
 }
 
 func (l *List[E]) Move(from, to int) error {
-	l.Lock()
-	defer l.Unlock()
+	l.lock.Lock()
+	defer l.lock.Unlock()
 
 	if l.isValidIndex(from) == false {
 		return errors.New("invalid index")
@@ -115,8 +115,8 @@ func (l *List[E]) Move(from, to int) error {
 }
 
 func (l *List[E]) SwapItemsAt(idx1, idx2 int) error {
-	l.Lock()
-	defer l.Unlock()
+	l.lock.Lock()
+	defer l.lock.Unlock()
 
 	if l.isValidIndex(idx1) == false {
 		return errors.New("invalid index")
@@ -135,9 +135,35 @@ func (l *List[E]) SwapItemsAt(idx1, idx2 int) error {
 	return nil
 }
 
+func (l *List[E]) First() (v E, err error) {
+	l.lock.RLock()
+	defer l.lock.RUnlock()
+
+	if len(l.list) == 0 {
+		err = errors.New("empty list")
+		return
+	}
+
+	v = l.list[0].value
+	return
+}
+
+func (l *List[E]) Last() (v E, err error) {
+	l.lock.RLock()
+	defer l.lock.RUnlock()
+
+	if len(l.list) == 0 {
+		err = errors.New("empty list")
+		return
+	}
+
+	v = l.list[len(l.list)-1].value
+	return
+}
+
 func (l *List[E]) At(index int) (v E, err error) {
-	l.RLock()
-	defer l.RUnlock()
+	l.lock.RLock()
+	defer l.lock.RUnlock()
 
 	if b := l.isValidIndex(index); !b {
 		err = errors.New("outside range")
@@ -149,15 +175,15 @@ func (l *List[E]) At(index int) (v E, err error) {
 }
 
 func (l *List[E]) Len() int {
-	l.RLock()
-	defer l.RUnlock()
+	l.lock.RLock()
+	defer l.lock.RUnlock()
 
 	return len(l.list)
 }
 
 func (l *List[E]) TakeFirst() (v E, err error) {
-	l.Lock()
-	defer l.Unlock()
+	l.lock.Lock()
+	defer l.lock.Unlock()
 
 	if len(l.list) == 0 {
 		err = errors.New("empty list")
@@ -170,8 +196,8 @@ func (l *List[E]) TakeFirst() (v E, err error) {
 }
 
 func (l *List[E]) TakeLast() (v E, err error) {
-	l.Lock()
-	defer l.Unlock()
+	l.lock.Lock()
+	defer l.lock.Unlock()
 
 	if len(l.list) == 0 {
 		err = errors.New("empty list")
@@ -184,8 +210,8 @@ func (l *List[E]) TakeLast() (v E, err error) {
 }
 
 func (l *List[E]) TakeAt(idx int) (v E, err error) {
-	l.Lock()
-	defer l.Unlock()
+	l.lock.Lock()
+	defer l.lock.Unlock()
 
 	if b := l.isValidIndex(idx); !b {
 		err = errors.New("invalid index")
@@ -197,9 +223,18 @@ func (l *List[E]) TakeAt(idx int) (v E, err error) {
 	return
 }
 
+func (l *List[E]) Range(f func(index int, v E)) {
+	l.lock.RLock()
+	defer l.lock.RUnlock()
+
+	for i, v := range l.list {
+		f(i, v.value)
+	}
+}
+
 func (l *List[E]) String() string {
-	l.RLock()
-	defer l.RUnlock()
+	l.lock.RLock()
+	defer l.lock.RUnlock()
 	tmpList := make([]string, len(l.list))
 	for i, _ := range l.list {
 		tmpList[i] = fmt.Sprintf("%v", l.list[i].Value())

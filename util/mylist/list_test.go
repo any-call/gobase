@@ -1,6 +1,8 @@
 package mylist
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestList(t *testing.T) {
 	list := New[string]()
@@ -13,13 +15,19 @@ func TestList(t *testing.T) {
 	//	t.Error(err)
 	//}
 
-	list.SwapItemsAt(3, 2)
-	var err error
-	var v string
-	for err == nil {
-		if v, err = list.TakeAt(0); err == nil {
-			t.Log("v:", v)
-		}
+	//list.SwapItemsAt(3, 2)
 
-	}
+	list.Range(func(index int, v string) {
+		t.Log("index", index, " value:", v)
+	})
+	
+	t.Log("list :", list)
+	//var err error
+	//var v string
+	//for err == nil {
+	//	if v, err = list.TakeAt(0); err == nil {
+	//		t.Log("v:", v)
+	//	}
+	//
+	//}
 }
