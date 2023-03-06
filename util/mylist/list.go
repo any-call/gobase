@@ -114,6 +114,27 @@ func (l *List[E]) Move(from, to int) error {
 	return nil
 }
 
+func (l *List[E]) SwapItemsAt(idx1, idx2 int) error {
+	l.Lock()
+	defer l.Unlock()
+
+	if l.isValidIndex(idx1) == false {
+		return errors.New("invalid index")
+	}
+	if l.isValidIndex(idx2) == false {
+		return errors.New("invalid index")
+	}
+
+	if idx1 == idx2 {
+		return nil
+	}
+
+	tmpNode := l.list[idx1]
+	l.list[idx1] = l.list[idx2]
+	l.list[idx2] = tmpNode
+	return nil
+}
+
 func (l *List[E]) At(index int) (v E, err error) {
 	l.RLock()
 	defer l.RUnlock()
@@ -132,6 +153,48 @@ func (l *List[E]) Len() int {
 	defer l.RUnlock()
 
 	return len(l.list)
+}
+
+func (l *List[E]) TakeFirst() (v E, err error) {
+	l.Lock()
+	defer l.Unlock()
+
+	if len(l.list) == 0 {
+		err = errors.New("empty list")
+		return
+	}
+
+	v = l.list[0].value
+	l.list = l.list[1:]
+	return
+}
+
+func (l *List[E]) TakeLast() (v E, err error) {
+	l.Lock()
+	defer l.Unlock()
+
+	if len(l.list) == 0 {
+		err = errors.New("empty list")
+		return
+	}
+
+	v = l.list[len(l.list)-1].value
+	l.list = l.list[:len(l.list)-1]
+	return
+}
+
+func (l *List[E]) TakeAt(idx int) (v E, err error) {
+	l.Lock()
+	defer l.Unlock()
+
+	if b := l.isValidIndex(idx); !b {
+		err = errors.New("invalid index")
+		return
+	}
+
+	v = l.list[idx].value
+	l.list = append(l.list[:idx], l.list[idx+1:]...)
+	return
 }
 
 func (l *List[E]) String() string {

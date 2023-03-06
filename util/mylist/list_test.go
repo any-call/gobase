@@ -9,8 +9,17 @@ func TestList(t *testing.T) {
 	list.Insert(1, "is")
 	list.Append("hello world")
 	t.Log("list :", list)
-	if err := list.Move(3, 0); err != nil {
-		t.Error(err)
+	//if err := list.Move(3, 0); err != nil {
+	//	t.Error(err)
+	//}
+
+	list.SwapItemsAt(3, 2)
+	var err error
+	var v string
+	for err == nil {
+		if v, err = list.TakeAt(0); err == nil {
+			t.Log("v:", v)
+		}
+
 	}
-	t.Log("list move 2 to 0:", list)
 }
