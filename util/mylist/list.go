@@ -106,7 +106,10 @@ func (l *List[E]) Move(from, to int) error {
 		}
 		l.list = append(append(l.list[:from], append(l.list[from+1:to+1], l.list[from])...), backList...)
 	} else {
-		l.list = append(append(l.list[0:to], l.list[from]), l.list[to+1:from]...)
+		toItem := newNode[E](l.list[to].value)
+		toFromList := append([]*node[E]{toItem}, l.list[to+1:from]...)
+		toFromList = append(toFromList, l.list[from+1:]...)
+		l.list = append(append(l.list[:to], l.list[from]), toFromList...)
 	}
 	return nil
 }
