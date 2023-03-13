@@ -5,6 +5,20 @@ import (
 	"regexp"
 )
 
+func ValidIP(ip string) bool {
+	address := net.ParseIP(ip)
+	if address == nil {
+		return false
+	}
+
+	if address.To4() != nil ||
+		address.To16() != nil {
+		return true
+	}
+
+	return false
+}
+
 func ValidIPV4(ipv4 string) bool {
 	address := net.ParseIP(ipv4)
 	if address == nil {
