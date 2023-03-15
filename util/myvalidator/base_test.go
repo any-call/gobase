@@ -14,4 +14,7 @@ func TestValidIPV6(t *testing.T) {
 
 	b = ValidCAA("12 iodef www.testdns.com")
 	t.Log("caa :", b)
+
+	b = ValidSoa("dns.baidu.com sa.baidu.com. 2012146317 300 300 2592000 7200")
+	t.Log("soa:", b)
 }

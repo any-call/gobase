@@ -3,6 +3,7 @@ package myvalidator
 import (
 	"net"
 	"regexp"
+	"strings"
 )
 
 func ValidIP(ip string) bool {
@@ -47,6 +48,12 @@ func ValidIPV6(ipv6 string) bool {
 // 它是一个完整的域名，包括完整的子域名和主域名部分。
 // 例如，www.example.com是一个FQDN，其中“www”是子域名，“example”是主域名，“com”是顶级域名。
 func ValidFqdn(domain string) bool {
+	if !strings.HasSuffix(domain, ".") {
+		return false
+	} else {
+		domain = strings.TrimSuffix(domain, ".")
+	}
+
 	pattern := `^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,6}$`
 	// 使用正则表达式进行匹配验证
 	match, _ := regexp.MatchString(pattern, domain)
