@@ -15,29 +15,39 @@ type Signal[E comparable] struct {
 	conID int      //记录每次联接的增量值
 }
 
-// 发射 Signal
-func (sig *Signal[E]) Emit(param E) {
+// 同步发射 Signal
+func (sig *Signal[E]) Emit(param E) error {
 	if sig == nil {
-		return
+		return nil
 	}
 
 	sig.RLock()
 	defer sig.RUnlock()
 
 	if sig.cons == nil || len(sig.cons) == 0 {
-		return
+		return nil
 	}
 
+	var err error
 	wg := &sync.WaitGroup{}
 	wg.Add(len(sig.cons))
 	for i, _ := range sig.cons {
 		go func(index int, info E) {
 			defer wg.Done()
-			sig.cons[index].slot(info)
+			if errTmp := sig.cons[index].slot(info); errTmp != nil {
+				err = errTmp
+			}
 		}(i, param)
 	}
 	wg.Wait()
-	return
+	return err
+}
+
+// 异步发射 Signal
+func (sig *Signal[E]) AsyncEmit(param E) {
+	go func(E) {
+		sig.Emit(param)
+	}(param)
 }
 
 // 增加 slot
