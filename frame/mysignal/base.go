@@ -4,12 +4,12 @@ import (
 	"sync"
 )
 
-func NewSignal[E comparable]() *Signal[E] {
+func NewSignal[E any]() *Signal[E] {
 	return &Signal[E]{}
 }
 
 // 定义 Signal结构
-type Signal[E comparable] struct {
+type Signal[E any] struct {
 	sync.RWMutex
 	cons  []con[E] //标识该信号联接的槽
 	conID int      //记录每次联接的增量值
@@ -94,15 +94,15 @@ func (sig *Signal[E]) DelSlot(cid int) {
 	}
 }
 
-type con[E comparable] struct {
+type con[E any] struct {
 	slot Slot[E]
 	cid  int
 }
 
 // 定义 Slot
-type Slot[E comparable] func(E) error
+type Slot[E any] func(E) error
 
-func Connect[E comparable](sig *Signal[E], s Slot[E]) int {
+func Connect[E any](sig *Signal[E], s Slot[E]) int {
 	if sig == nil {
 		return 0
 	}
@@ -110,7 +110,7 @@ func Connect[E comparable](sig *Signal[E], s Slot[E]) int {
 	return sig.AddSlot(s)
 }
 
-func DisConnect[E comparable](sig *Signal[E], cid int) {
+func DisConnect[E any](sig *Signal[E], cid int) {
 	if sig == nil {
 		return
 	}
