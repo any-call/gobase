@@ -1,6 +1,8 @@
 package myvalidator
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestValidIPV6(t *testing.T) {
 	b := ValidIPV6("fe80::ec5e:e3ff:febe:ceb3")
