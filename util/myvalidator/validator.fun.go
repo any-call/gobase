@@ -15,12 +15,27 @@ type ValidInfo struct {
 }
 
 func (v *ValidInfo) Valid() error {
-	switch v.name {
+	switch strings.TrimSpace(strings.ToLower(v.name)) {
 	case "min":
 		return min(v.val, v.param)
 
 	case "max":
 		return max(v.val, v.param)
+
+	case "range":
+		return rangeValue(v.val, v.param)
+
+	case "minlength", "minlen":
+		return minlength(v.val, v.param)
+
+	case "maxlength", "maxlen":
+		return maxlength(v.val, v.param)
+
+	case "rangelength", "rangelen":
+		return rangeLength(v.val, v.param)
+
+	case "enum":
+		return enum(v.val, v.param)
 	}
 
 	return nil
@@ -30,6 +45,7 @@ func (v *ValidInfo) String() string {
 	return fmt.Sprintf("%v(%v)", v.name, strings.Join(v.param, ","))
 }
 
+// 数值类
 func min(val reflect.Value, param []string) error {
 	if param == nil && len(param) == 0 {
 		return nil
@@ -76,7 +92,6 @@ func min(val reflect.Value, param []string) error {
 
 	return nil
 }
-
 func max(val reflect.Value, param []string) error {
 	if param == nil && len(param) == 0 {
 		return nil
@@ -116,6 +131,217 @@ func max(val reflect.Value, param []string) error {
 				if val.Float() > baseVal {
 					return errors.New(strings.Join(param[1:], " "))
 				}
+			}
+		}
+		break
+	}
+
+	return nil
+}
+func rangeValue(val reflect.Value, param []string) error {
+	if param == nil && len(param) < 2 {
+		return nil
+	}
+
+	baseStr1 := param[0]
+	baseStr2 := param[1]
+	switch val.Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		{
+			baseVal1, err := myconv.StrToNum[int64](baseStr1)
+			if err != nil {
+				return err
+			}
+
+			baseVal2, err := myconv.StrToNum[int64](baseStr2)
+			if err != nil {
+				return err
+			}
+
+			if val.Int() < baseVal1 || val.Int() > baseVal2 {
+				return errors.New(strings.Join(param[2:], " "))
+			}
+		}
+		break
+
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		{
+			baseVal1, err := myconv.StrToNum[uint64](baseStr1)
+			if err != nil {
+				return err
+			}
+
+			baseVal2, err := myconv.StrToNum[uint64](baseStr2)
+			if err != nil {
+				return err
+			}
+
+			if val.Uint() < baseVal1 || val.Uint() > baseVal2 {
+				return errors.New(strings.Join(param[2:], " "))
+			}
+		}
+		break
+
+	case reflect.Float32, reflect.Float64:
+		{
+			baseVal1, err := myconv.StrToNum[float64](baseStr1)
+			if err != nil {
+				return err
+			}
+
+			baseVal2, err := myconv.StrToNum[float64](baseStr2)
+			if err != nil {
+				return err
+			}
+
+			if val.Float() < baseVal1 || val.Float() > baseVal2 {
+				return errors.New(strings.Join(param[2:], " "))
+			}
+		}
+		break
+	}
+
+	return nil
+}
+
+// 字符类
+func minlength(val reflect.Value, param []string) error {
+	if param == nil && len(param) == 0 {
+		return nil
+	}
+
+	baseStr := param[0]
+	switch val.Kind() {
+	case reflect.String:
+		{
+			if baseVal, err := myconv.StrToNum[int](baseStr); err != nil {
+				return err
+			} else {
+				if len(val.String()) < baseVal {
+					return errors.New(strings.Join(param[1:], " "))
+				}
+			}
+		}
+		break
+	}
+
+	return nil
+}
+func maxlength(val reflect.Value, param []string) error {
+	if param == nil && len(param) == 0 {
+		return nil
+	}
+
+	baseStr := param[0]
+	switch val.Kind() {
+	case reflect.String:
+		{
+			if baseVal, err := myconv.StrToNum[int](baseStr); err != nil {
+				return err
+			} else {
+				if len(val.String()) > baseVal {
+					return errors.New(strings.Join(param[1:], " "))
+				}
+			}
+		}
+		break
+	}
+
+	return nil
+}
+func rangeLength(val reflect.Value, param []string) error {
+	if param == nil && len(param) < 2 {
+		return nil
+	}
+
+	baseStr1 := param[0]
+	baseStr2 := param[1]
+	switch val.Kind() {
+	case reflect.String:
+		{
+			baseVal1, err := myconv.StrToNum[int](baseStr1)
+			if err != nil {
+				return err
+			}
+
+			baseVal2, err := myconv.StrToNum[int](baseStr2)
+			if err != nil {
+				return err
+			}
+
+			if len(val.String()) < baseVal1 || len(val.String()) > baseVal2 {
+				return errors.New(strings.Join(param[2:], " "))
+			}
+		}
+		break
+	}
+
+	return nil
+}
+
+// 枚举值
+func enum(val reflect.Value, param []string) error {
+	if param == nil && len(param) == 0 {
+		return nil
+	}
+
+	baseStr := param[0]
+	listEnumItem := strings.Split(baseStr, "|")
+	switch val.Kind() {
+	case reflect.String:
+		{
+			mapItem := make(map[string]bool, 10)
+			for i, _ := range listEnumItem {
+				mapItem[listEnumItem[i]] = true
+			}
+
+			if mapItem[val.String()] == false {
+				return errors.New(strings.Join(param[1:], " "))
+			}
+		}
+		break
+
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		{
+			mapItem := make(map[int64]bool, 10)
+			for i, _ := range listEnumItem {
+				if v, err := myconv.StrToNum[int64](listEnumItem[i]); err == nil {
+					mapItem[v] = true
+				}
+			}
+
+			if mapItem[val.Int()] == false {
+				return errors.New(strings.Join(param[1:], " "))
+			}
+		}
+		break
+
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		{
+			mapItem := make(map[uint64]bool, 10)
+			for i, _ := range listEnumItem {
+				if v, err := myconv.StrToNum[uint64](listEnumItem[i]); err == nil {
+					mapItem[v] = true
+				}
+			}
+
+			if mapItem[val.Uint()] == false {
+				return errors.New(strings.Join(param[1:], " "))
+			}
+		}
+		break
+
+	case reflect.Float32, reflect.Float64:
+		{
+			mapItem := make(map[float64]bool, 10)
+			for i, _ := range listEnumItem {
+				if v, err := myconv.StrToNum[float64](listEnumItem[i]); err == nil {
+					mapItem[v] = true
+				}
+			}
+
+			if mapItem[val.Float()] == false {
+				return errors.New(strings.Join(param[1:], " "))
 			}
 		}
 		break
