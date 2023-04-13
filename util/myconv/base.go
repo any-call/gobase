@@ -1,10 +1,106 @@
 package myconv
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"reflect"
 	"strconv"
 )
+
+// 去掉引用，返回对象本身
+func DirectObj(a any) any {
+	if a == nil {
+		return nil
+	}
+
+	if t := reflect.TypeOf(a); t.Kind() != reflect.Pointer {
+		return a
+	}
+
+	//说明是指针类 :检测是不是空指针
+	v := reflect.ValueOf(a)
+	if v.IsNil() {
+		return nil
+	}
+
+	for v.Kind() == reflect.Pointer {
+		if v.IsNil() {
+			return nil
+		}
+		v = v.Elem()
+	}
+
+	return v.Interface()
+}
+
+func ToBool(i any) (bool, error) {
+	i = DirectObj(i)
+	switch b := i.(type) {
+	case bool:
+		return b, nil
+
+	case int, int8, int16, int32, int64:
+		if reflect.ValueOf(i).Int() != 0 {
+			return true, nil
+		}
+		return false, nil
+
+	case uint, uint8, uint16, uint32, uint64:
+		if reflect.ValueOf(i).Uint() != 0 {
+			return true, nil
+		}
+		return false, nil
+
+	case float32, float64:
+		if reflect.ValueOf(i).Float() != 0 {
+			return true, nil
+		}
+		return false, nil
+
+	case string:
+		return strconv.ParseBool(i.(string))
+	}
+
+	return false, fmt.Errorf("unable to cast %#v of type %T to bool", i, i)
+}
+
+func ToInt(i any) (int, error) {
+	i = DirectObj(i)
+
+	switch v := i.(type) {
+	case int:
+		return int(v), nil
+	case int8:
+		return int(v), nil
+	case int16:
+		return int(v), nil
+	case int32:
+		return int(v), nil
+	case int64:
+		return int(v), nil
+	case uint:
+		return int(v), nil
+	case uint8:
+		return int(v), nil
+	case uint16:
+		return int(v), nil
+	case uint32:
+		return int(v), nil
+	case uint64:
+		return int(v), nil
+	case float32:
+		return int(v), nil
+	case float64:
+		return int(v), nil
+	case string:
+		return strconv.Atoi(v)
+	case json.Number:
+		return strconv.Atoi(string(v))
+	}
+
+	return 0, fmt.Errorf("unable to cast %#v of type %T to int", i, i)
+}
 
 func StrToNum[T int | int8 | int16 | int32 | int64 | uint | uint8 | uint16 | uint32 | uint64 | float32 | float64](str string) (ret T, err error) {
 	switch any(ret).(type) {
@@ -87,97 +183,3 @@ func StrToNum[T int | int8 | int16 | int32 | int64 | uint | uint8 | uint16 | uin
 
 	return ret, nil
 }
-
-//// ToAnyE converts one type to another and returns an error if occurred.
-//func ToAnyE[T any](a any) (T, error) {
-//	var t T
-//	switch any(t).(type) {
-//	case bool:
-//		v, err := ToBoolE(a)
-//		if err != nil {
-//			return t, err
-//		}
-//		t = any(v).(T)
-//	case int:
-//		v, err := ToIntE(a)
-//		if err != nil {
-//			return t, err
-//		}
-//		t = any(v).(T)
-//	case int8:
-//		v, err := ToInt8E(a)
-//		if err != nil {
-//			return t, err
-//		}
-//		t = any(v).(T)
-//	case int16:
-//		v, err := ToInt16E(a)
-//		if err != nil {
-//			return t, err
-//		}
-//		t = any(v).(T)
-//	case int32:
-//		v, err := ToInt32E(a)
-//		if err != nil {
-//			return t, err
-//		}
-//		t = any(v).(T)
-//	case int64:
-//		v, err := ToInt64E(a)
-//		if err != nil {
-//			return t, err
-//		}
-//		t = any(v).(T)
-//	case uint:
-//		v, err := ToUintE(a)
-//		if err != nil {
-//			return t, err
-//		}
-//		t = any(v).(T)
-//	case uint8:
-//		v, err := ToUint8E(a)
-//		if err != nil {
-//			return t, err
-//		}
-//		t = any(v).(T)
-//	case uint16:
-//		v, err := ToUint16E(a)
-//		if err != nil {
-//			return t, err
-//		}
-//		t = any(v).(T)
-//	case uint32:
-//		v, err := ToUint32E(a)
-//		if err != nil {
-//			return t, err
-//		}
-//		t = any(v).(T)
-//	case uint64:
-//		v, err := ToUint64E(a)
-//		if err != nil {
-//			return t, err
-//		}
-//		t = any(v).(T)
-//	case float32:
-//		v, err := ToFloat32E(a)
-//		if err != nil {
-//			return t, err
-//		}
-//		t = any(v).(T)
-//	case float64:
-//		v, err := ToFloat64E(a)
-//		if err != nil {
-//			return t, err
-//		}
-//		t = any(v).(T)
-//	case string:
-//		v, err := ToStringE(a)
-//		if err != nil {
-//			return t, err
-//		}
-//		t = any(v).(T)
-//	default:
-//		return t, fmt.Errorf("the type %T is not supported", t)
-//	}
-//	return t, nil
-//}

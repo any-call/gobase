@@ -14,6 +14,10 @@ func Split(src string, flagList []string) []string {
 	})
 }
 
+func RemoveSpec(str string, spec string) string {
+	return strings.Join(strings.Split(str, spec), "")
+}
+
 // 计算给定src字符串中出现cond的次数
 func CalcStrFreq(str, cond string) (n int) {
 	src := []rune(str)

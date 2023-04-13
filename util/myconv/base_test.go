@@ -1,6 +1,9 @@
 package myconv
 
-import "testing"
+import (
+	"encoding/json"
+	"testing"
+)
 
 func TestStrToNum(t *testing.T) {
 	if v, err := StrToNum[int]("123"); err != nil {
@@ -15,5 +18,14 @@ func TestStrToNum(t *testing.T) {
 		return
 	} else {
 		t.Log("str to num :", v)
+	}
+}
+
+func TestToBool(t *testing.T) {
+	var aa json.Number = "true"
+	if b, err := ToBool(aa); err != nil {
+		t.Error(err)
+	} else {
+		t.Log("b:", b)
 	}
 }
