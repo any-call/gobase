@@ -36,30 +36,31 @@ func DirectObj(a any) any {
 
 func ToBool(i any) (bool, error) {
 	i = DirectObj(i)
-	switch b := i.(type) {
-	case bool:
-		return b, nil
+	switch reflect.ValueOf(i).Kind() {
+	case reflect.Bool:
+		return i.(bool), nil
 
-	case int, int8, int16, int32, int64:
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		if reflect.ValueOf(i).Int() != 0 {
 			return true, nil
 		}
+
 		return false, nil
 
-	case uint, uint8, uint16, uint32, uint64:
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		if reflect.ValueOf(i).Uint() != 0 {
 			return true, nil
 		}
 		return false, nil
 
-	case float32, float64:
+	case reflect.Float32, reflect.Float64:
 		if reflect.ValueOf(i).Float() != 0 {
 			return true, nil
 		}
 		return false, nil
 
-	case string:
-		return strconv.ParseBool(i.(string))
+	case reflect.String:
+		return strconv.ParseBool(reflect.ValueOf(i).String())
 	}
 
 	return false, fmt.Errorf("unable to cast %#v of type %T to bool", i, i)
