@@ -1,7 +1,6 @@
 package myconv
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"reflect"
@@ -32,6 +31,137 @@ func DirectObj(a any) any {
 	}
 
 	return v.Interface()
+}
+
+func ToAny[T any](i any) (T, error) {
+	var ret T
+	myType := reflect.TypeOf(ret)
+	switch myType.Kind() {
+	case reflect.Int:
+		{
+			tmp, err := ToNum[int](i)
+			if err != nil {
+				return ret, err
+			}
+			return any(tmp).(T), nil
+		}
+
+	case reflect.Int8:
+		{
+			tmp, err := ToNum[int8](i)
+			if err != nil {
+				return ret, err
+			}
+			return any(tmp).(T), nil
+		}
+
+	case reflect.Int16:
+		{
+			tmp, err := ToNum[int16](i)
+			if err != nil {
+				return ret, err
+			}
+			return any(tmp).(T), nil
+		}
+
+	case reflect.Int32:
+		{
+			tmp, err := ToNum[int32](i)
+			if err != nil {
+				return ret, err
+			}
+			return any(tmp).(T), nil
+		}
+
+	case reflect.Int64:
+		{
+			tmp, err := ToNum[int64](i)
+			if err != nil {
+				return ret, err
+			}
+			return any(tmp).(T), nil
+		}
+
+	case reflect.Uint:
+		{
+			tmp, err := ToNum[uint](i)
+			if err != nil {
+				return ret, err
+			}
+			return any(tmp).(T), nil
+		}
+
+	case reflect.Uint8:
+		{
+			tmp, err := ToNum[uint8](i)
+			if err != nil {
+				return ret, err
+			}
+			return any(tmp).(T), nil
+		}
+
+	case reflect.Uint16:
+		{
+			tmp, err := ToNum[uint16](i)
+			if err != nil {
+				return ret, err
+			}
+			return any(tmp).(T), nil
+		}
+
+	case reflect.Uint32:
+		{
+			tmp, err := ToNum[uint32](i)
+			if err != nil {
+				return ret, err
+			}
+			return any(tmp).(T), nil
+		}
+
+	case reflect.Uint64:
+		{
+			tmp, err := ToNum[uint64](i)
+			if err != nil {
+				return ret, err
+			}
+			return any(tmp).(T), nil
+		}
+
+	case reflect.Float32:
+		{
+			tmp, err := ToNum[float32](i)
+			if err != nil {
+				return ret, err
+			}
+			return any(tmp).(T), nil
+		}
+
+	case reflect.Float64:
+		{
+			tmp, err := ToNum[float64](i)
+			if err != nil {
+				return ret, err
+			}
+			return any(tmp).(T), nil
+		}
+
+	case reflect.String:
+		{
+			tmp := ToStr(i)
+			return any(tmp).(T), nil
+		}
+
+	case reflect.Bool:
+		{
+			tmp, err := ToBool(i)
+			if err != nil {
+				return ret, err
+			}
+			return any(tmp).(T), nil
+		}
+	}
+
+	return ret, fmt.Errorf("unable to cast %#v of type %T to  %T", i, i, ret)
 }
 
 func ToBool(i any) (bool, error) {
@@ -66,41 +196,14 @@ func ToBool(i any) (bool, error) {
 	return false, fmt.Errorf("unable to cast %#v of type %T to bool", i, i)
 }
 
-func ToInt(i any) (int, error) {
+func ToNum[T int | int8 | int16 | int32 | int64 | uint | uint8 | uint16 | uint32 | uint64 | float32 | float64](i any) (T, error) {
 	i = DirectObj(i)
+	return StrToNum[T](fmt.Sprintf("%v", i))
+}
 
-	switch v := i.(type) {
-	case int:
-		return int(v), nil
-	case int8:
-		return int(v), nil
-	case int16:
-		return int(v), nil
-	case int32:
-		return int(v), nil
-	case int64:
-		return int(v), nil
-	case uint:
-		return int(v), nil
-	case uint8:
-		return int(v), nil
-	case uint16:
-		return int(v), nil
-	case uint32:
-		return int(v), nil
-	case uint64:
-		return int(v), nil
-	case float32:
-		return int(v), nil
-	case float64:
-		return int(v), nil
-	case string:
-		return strconv.Atoi(v)
-	case json.Number:
-		return strconv.Atoi(string(v))
-	}
-
-	return 0, fmt.Errorf("unable to cast %#v of type %T to int", i, i)
+func ToStr(i any) string {
+	i = DirectObj(i)
+	return fmt.Sprintf("%v", i)
 }
 
 func StrToNum[T int | int8 | int16 | int32 | int64 | uint | uint8 | uint16 | uint32 | uint64 | float32 | float64](str string) (ret T, err error) {
