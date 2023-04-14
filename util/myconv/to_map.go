@@ -25,3 +25,15 @@ func Struct2Map(a any) (map[string]any, error) {
 
 	return m, nil
 }
+
+func Map2Slice[K comparable, V any](mp map[K]V) (ks []K, vs []V) {
+	ks = make([]K, 0, len(mp))
+	vs = make([]V, 0, len(mp))
+
+	for k, v := range mp {
+		ks = append(ks, k)
+		vs = append(vs, v)
+	}
+
+	return
+}

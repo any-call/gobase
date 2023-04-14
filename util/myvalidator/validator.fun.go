@@ -36,6 +36,21 @@ func (v *ValidInfo) Valid() error {
 
 	case "enum":
 		return enum(v.val, v.param)
+
+	case "email", "mail":
+		return email(v.val, v.param)
+
+	case "ip":
+		return ip(v.val, v.param)
+
+	case "ip4", "ipv4":
+		return ip4(v.val, v.param)
+
+	case "ip6", "ipv6":
+		return ip6(v.val, v.param)
+
+	case "phone", "mobilephone":
+		return phone(v.val, v.param)
 	}
 
 	return nil
@@ -342,6 +357,96 @@ func enum(val reflect.Value, param []string) error {
 
 			if mapItem[val.Float()] == false {
 				return errors.New(strings.Join(param[1:], " "))
+			}
+		}
+		break
+	}
+
+	return nil
+}
+
+func email(val reflect.Value, param []string) error {
+	if param == nil && len(param) == 0 {
+		return nil
+	}
+
+	switch val.Kind() {
+	case reflect.String:
+		{
+			if ValidEmail(val.String()) == false {
+				return errors.New(strings.Join(param, " "))
+			}
+		}
+		break
+	}
+
+	return nil
+}
+
+func ip(val reflect.Value, param []string) error {
+	if param == nil && len(param) == 0 {
+		return nil
+	}
+
+	switch val.Kind() {
+	case reflect.String:
+		{
+			if ValidIP(val.String()) == false {
+				return errors.New(strings.Join(param, " "))
+			}
+		}
+		break
+	}
+
+	return nil
+}
+
+func ip4(val reflect.Value, param []string) error {
+	if param == nil && len(param) == 0 {
+		return nil
+	}
+
+	switch val.Kind() {
+	case reflect.String:
+		{
+			if ValidIPV4(val.String()) == false {
+				return errors.New(strings.Join(param, " "))
+			}
+		}
+		break
+	}
+
+	return nil
+}
+
+func ip6(val reflect.Value, param []string) error {
+	if param == nil && len(param) == 0 {
+		return nil
+	}
+
+	switch val.Kind() {
+	case reflect.String:
+		{
+			if ValidIPV6(val.String()) == false {
+				return errors.New(strings.Join(param, " "))
+			}
+		}
+		break
+	}
+
+	return nil
+}
+
+func phone(val reflect.Value, param []string) error {
+	if param == nil && len(param) == 0 {
+		return nil
+	}
+
+	switch val.Kind() {
+	case reflect.String:
+		{
+			if ValidPhone(val.String()) == false {
+				return errors.New(strings.Join(param, " "))
 			}
 		}
 		break

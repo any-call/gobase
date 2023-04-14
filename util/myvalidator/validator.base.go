@@ -16,7 +16,7 @@ var (
 )
 
 func init() {
-	reMatchFun = regexp.MustCompile("[a-z]+\\({1}[^()]+\\){1}")
+	reMatchFun = regexp.MustCompile("[a-z46]+\\({1}[^()]+\\){1}")
 }
 
 func Validate(obj any) error {
