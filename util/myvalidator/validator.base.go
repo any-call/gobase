@@ -1,6 +1,7 @@
 package myvalidator
 
 import (
+	"github.com/any-call/gobase/util/myconv"
 	"github.com/any-call/gobase/util/mystr"
 	"reflect"
 	"regexp"
@@ -16,10 +17,11 @@ var (
 )
 
 func init() {
-	reMatchFun = regexp.MustCompile("[a-z46]+\\({1}[^()]+\\){1}")
+	reMatchFun = regexp.MustCompile("[a-z46_]+\\({1}[^()]+\\){1}")
 }
 
 func Validate(obj any) error {
+	obj = myconv.DirectObj(obj)
 	return check(reflect.TypeOf(obj), reflect.ValueOf(obj))
 }
 
@@ -35,11 +37,18 @@ func check(myType reflect.Type, myValue reflect.Value) error {
 		}
 	}
 
-	//检测是不是结构体
-	if myType.Kind() != reflect.Struct {
-		return nil
+	switch myType.Kind() {
+	case reflect.Struct:
+		return scanStruct(myType, myValue)
+	case reflect.Slice, reflect.Array:
+		return scanSlice(myType, myValue)
 	}
 
+	return nil
+}
+
+// 扫描结构体
+func scanStruct(myType reflect.Type, myValue reflect.Value) error {
 	//首先检测是不是有 验证标签：validate
 	totalField := myType.NumField()
 	for i := 0; i < totalField; i++ {
@@ -67,6 +76,18 @@ func check(myType reflect.Type, myValue reflect.Value) error {
 					}
 				}
 			}
+		}
+	}
+
+	return nil
+}
+
+// 扫描数组
+func scanSlice(myType reflect.Type, myValue reflect.Value) error {
+	//首先检测是不是有 验证标签：validate
+	for i := 0; i < myValue.Len(); i++ {
+		if err := Validate(myValue.Index(i).Interface()); err != nil {
+			return err
 		}
 	}
 

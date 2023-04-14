@@ -31,6 +31,24 @@ func (v *ValidInfo) Valid() error {
 	case "maxlength", "maxlen":
 		return maxlength(v.val, v.param)
 
+	case "arr_minlength", "arr_minlen":
+		return arrayMinLen(v.val, v.param)
+
+	case "arr_maxlength", "arr_maxlen":
+		return arrayMaxLen(v.val, v.param)
+
+	case "arr_rangelength", "arr_rangelen":
+		return arrayRangeLen(v.val, v.param)
+
+	case "map_minlength", "map_minlen":
+		return mapMinLen(v.val, v.param)
+
+	case "map_maxlength", "map_maxlen":
+		return mapMaxLen(v.val, v.param)
+
+	case "map_rangelength", "map_rangelen":
+		return mapRangeLen(v.val, v.param)
+
 	case "rangelength", "rangelen":
 		return rangeLength(v.val, v.param)
 
@@ -365,6 +383,157 @@ func enum(val reflect.Value, param []string) error {
 	return nil
 }
 
+// 数组类
+func arrayMinLen(val reflect.Value, param []string) error {
+	if param == nil && len(param) == 0 {
+		return nil
+	}
+
+	baseStr := param[0]
+	switch val.Kind() {
+	case reflect.Slice, reflect.Array:
+		{
+			if baseVal, err := myconv.StrToNum[int](baseStr); err != nil {
+				return err
+			} else {
+				if val.Len() < baseVal {
+					return errors.New(strings.Join(param[1:], " "))
+				}
+			}
+		}
+		break
+	}
+
+	return nil
+}
+func arrayMaxLen(val reflect.Value, param []string) error {
+	if param == nil && len(param) == 0 {
+		return nil
+	}
+
+	baseStr := param[0]
+	switch val.Kind() {
+	case reflect.Slice, reflect.Array:
+		{
+			if baseVal, err := myconv.StrToNum[int64](baseStr); err != nil {
+				return err
+			} else {
+				if int64(val.Len()) > baseVal {
+					return errors.New(strings.Join(param[1:], " "))
+				}
+			}
+		}
+		break
+	}
+
+	return nil
+}
+func arrayRangeLen(val reflect.Value, param []string) error {
+	if param == nil && len(param) < 2 {
+		return nil
+	}
+
+	baseStr1 := param[0]
+	baseStr2 := param[1]
+	switch val.Kind() {
+	case reflect.Slice, reflect.Array:
+		{
+			baseVal1, err := myconv.StrToNum[int64](baseStr1)
+			if err != nil {
+				return err
+			}
+
+			baseVal2, err := myconv.StrToNum[int64](baseStr2)
+			if err != nil {
+				return err
+			}
+
+			if int64(val.Len()) < baseVal1 || int64(val.Len()) > baseVal2 {
+				return errors.New(strings.Join(param[2:], " "))
+			}
+		}
+		break
+	}
+
+	return nil
+}
+
+// map类
+func mapMinLen(val reflect.Value, param []string) error {
+	if param == nil && len(param) == 0 {
+		return nil
+	}
+
+	baseStr := param[0]
+	switch val.Kind() {
+	case reflect.Map:
+		{
+			if baseVal, err := myconv.StrToNum[int](baseStr); err != nil {
+				return err
+			} else {
+				if val.Len() < baseVal {
+					return errors.New(strings.Join(param[1:], " "))
+				}
+			}
+		}
+		break
+	}
+
+	return nil
+}
+func mapMaxLen(val reflect.Value, param []string) error {
+	if param == nil && len(param) == 0 {
+		return nil
+	}
+
+	baseStr := param[0]
+	switch val.Kind() {
+	case reflect.Map:
+		{
+			if baseVal, err := myconv.StrToNum[int64](baseStr); err != nil {
+				return err
+			} else {
+				if int64(val.Len()) > baseVal {
+					return errors.New(strings.Join(param[1:], " "))
+				}
+			}
+		}
+		break
+	}
+
+	return nil
+}
+func mapRangeLen(val reflect.Value, param []string) error {
+	if param == nil && len(param) < 2 {
+		return nil
+	}
+
+	baseStr1 := param[0]
+	baseStr2 := param[1]
+	switch val.Kind() {
+	case reflect.Map:
+		{
+			baseVal1, err := myconv.StrToNum[int64](baseStr1)
+			if err != nil {
+				return err
+			}
+
+			baseVal2, err := myconv.StrToNum[int64](baseStr2)
+			if err != nil {
+				return err
+			}
+
+			if int64(val.Len()) < baseVal1 || int64(val.Len()) > baseVal2 {
+				return errors.New(strings.Join(param[2:], " "))
+			}
+		}
+		break
+	}
+
+	return nil
+}
+
+// other 验证
 func email(val reflect.Value, param []string) error {
 	if param == nil && len(param) == 0 {
 		return nil
