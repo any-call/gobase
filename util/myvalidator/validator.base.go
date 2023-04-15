@@ -1,6 +1,7 @@
 package myvalidator
 
 import (
+	"fmt"
 	"github.com/any-call/gobase/util/myconv"
 	"github.com/any-call/gobase/util/mystr"
 	"reflect"
@@ -17,7 +18,7 @@ var (
 )
 
 func init() {
-	reMatchFun = regexp.MustCompile("[a-z46_]+\\({1}[^()]+\\){1}")
+	reMatchFun = regexp.MustCompile("[a-zA-Z46_]+\\({1}[^()]+\\){1}")
 }
 
 func Validate(obj any) error {
@@ -26,7 +27,7 @@ func Validate(obj any) error {
 }
 
 func check(myType reflect.Type, myValue reflect.Value) error {
-	//fmt.Printf("enter check type:%v,value:%v\n", myType, myValue)
+	fmt.Printf("enter check type:%v,value:%v\n", myType.Name(), myValue)
 	//针对指针类 ，转换成 实体
 	if myType.Kind() == reflect.Pointer {
 		if myValue.IsNil() == false {
@@ -39,9 +40,20 @@ func check(myType reflect.Type, myValue reflect.Value) error {
 
 	switch myType.Kind() {
 	case reflect.Struct:
-		return scanStruct(myType, myValue)
+		if err := scanStruct(myType, myValue); err != nil {
+			return err
+		}
+		break
 	case reflect.Slice, reflect.Array:
-		return scanSlice(myType, myValue)
+		if err := scanSlice(myValue); err != nil {
+			return err
+		}
+		break
+	case reflect.Map:
+		if err := scanMap(myType, myValue); err != nil {
+			return err
+		}
+		break
 	}
 
 	return nil
@@ -54,6 +66,11 @@ func scanStruct(myType reflect.Type, myValue reflect.Value) error {
 	for i := 0; i < totalField; i++ {
 		//只取必须验证的field
 		if vStr, ok := myType.Field(i).Tag.Lookup(keyValidTag); ok {
+
+			if myType.Field(i).Type.Kind() == reflect.Map {
+				fmt.Println("struct field name:...", myType.Field(i).Type.Name())
+			}
+
 			//正则式取函数相关信息
 			listFunInfo := reMatchFun.FindAllString(vStr, -1)
 			for j, _ := range listFunInfo {
@@ -82,8 +99,30 @@ func scanStruct(myType reflect.Type, myValue reflect.Value) error {
 	return nil
 }
 
+// 扫描map
+func scanMap(myType reflect.Type, myValue reflect.Value) error {
+	//首先检测是不是有 验证标签：validate
+	if myValue.Len() == 0 {
+		return nil
+	}
+
+	listKeys := myValue.MapKeys()
+	for i := 0; i < len(listKeys); i++ {
+		keyV := listKeys[i]
+		if err := Validate(keyV.Interface()); err != nil {
+			return err
+		}
+
+		if err := Validate(myValue.MapIndex(keyV).Interface()); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // 扫描数组
-func scanSlice(myType reflect.Type, myValue reflect.Value) error {
+func scanSlice(myValue reflect.Value) error {
 	//首先检测是不是有 验证标签：validate
 	for i := 0; i < myValue.Len(); i++ {
 		if err := Validate(myValue.Index(i).Interface()); err != nil {
