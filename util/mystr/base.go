@@ -16,7 +16,25 @@ func Split(src string, flagList []string) []string {
 	})
 }
 
-func SplitWithRuneLen(s string, length int) []string {
+func SplitByLen(s string, length int) []string {
+	sLen := len(s)
+	if sLen < length {
+		return []string{s}
+	}
+
+	list := make([]string, 0)
+	for i := 0; i < sLen; i = i + length {
+		if sLen > (i + length) {
+			list = append(list, string(s[i:i+length]))
+		} else {
+			list = append(list, string(s[i:sLen]))
+		}
+	}
+
+	return list
+}
+
+func SplitRuneByLen(s string, length int) []string {
 	rs := []rune(s)
 	rsLen := len(rs)
 	if rsLen < length {
