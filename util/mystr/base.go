@@ -1,6 +1,8 @@
 package mystr
 
-import "strings"
+import (
+	"strings"
+)
 
 func Split(src string, flagList []string) []string {
 	return strings.FieldsFunc(src, func(r rune) bool {
@@ -12,6 +14,25 @@ func Split(src string, flagList []string) []string {
 		}
 		return res
 	})
+}
+
+func SplitWithRuneLen(s string, length int) []string {
+	rs := []rune(s)
+	rsLen := len(rs)
+	if rsLen < length {
+		return []string{s}
+	}
+
+	list := make([]string, 0)
+	for i := 0; i < rsLen; i = i + length {
+		if rsLen > (i + length) {
+			list = append(list, string(rs[i:i+length]))
+		} else {
+			list = append(list, string(rs[i:rsLen]))
+		}
+	}
+
+	return list
 }
 
 func RemoveSpec(str string, spec string) string {
