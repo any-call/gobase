@@ -1,6 +1,9 @@
 package mycond
 
-import "github.com/any-call/gobase/util/myconv"
+import (
+	"github.com/any-call/gobase/util/myconv"
+	"reflect"
+)
 
 func Bool(value any) bool {
 	b, _ := myconv.ToBool(value)
@@ -22,4 +25,8 @@ func If[T any](b bool, trueVal, falseVal T) T {
 		return trueVal
 	}
 	return falseVal
+}
+
+func DeepEQ(a any, b any) bool {
+	return reflect.DeepEqual(a, b)
 }
