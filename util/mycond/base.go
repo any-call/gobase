@@ -28,5 +28,5 @@ func If[T any](b bool, trueVal, falseVal T) T {
 }
 
 func DeepEQ(a any, b any) bool {
-	return reflect.DeepEqual(a, b)
+	return reflect.DeepEqual(myconv.DirectObj(a), myconv.DirectObj(b))
 }
