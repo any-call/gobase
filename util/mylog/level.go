@@ -17,7 +17,7 @@ const (
 	FatalLevel
 )
 
-var LevelNameMapping = map[Level]string{
+var levelNameMapping = map[Level]string{
 	DebugLevel: "DEBUG",
 	InfoLevel:  "INFO",
 	WarnLevel:  "WARN",
@@ -26,7 +26,7 @@ var LevelNameMapping = map[Level]string{
 	FatalLevel: "FATAL",
 }
 
-var LevelStyleMapping = map[Level]func(string) string{
+var levelStyleMapping = map[Level]func(string) string{
 	DebugLevel: debugStyle,
 	InfoLevel:  infoStyle,
 	WarnLevel:  warnStyle,

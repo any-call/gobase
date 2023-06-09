@@ -22,7 +22,7 @@ type TextFormatter struct {
 func (f *TextFormatter) Format(e *Entry) error {
 	var content string
 	if !f.IgnoreBasicFields {
-		content += fmt.Sprintf("%s %s", e.Time.Format(time.RFC3339), LevelNameMapping[e.Level]) // allocs
+		content += fmt.Sprintf("%s %s", e.Time.Format(time.RFC3339), levelNameMapping[e.Level]) // allocs
 		if e.File != "" {
 			short := e.File
 			for i := len(e.File) - 1; i > 0; i-- {
@@ -43,7 +43,7 @@ func (f *TextFormatter) Format(e *Entry) error {
 		content += fmt.Sprintf(e.Format, e.Args...)
 	}
 
-	if style, ok := LevelStyleMapping[e.Level]; ok {
+	if style, ok := levelStyleMapping[e.Level]; ok {
 		content = style(content)
 	}
 
@@ -58,7 +58,7 @@ type JsonFormatter struct {
 
 func (f *JsonFormatter) Format(e *Entry) error {
 	if !f.IgnoreBasicFields {
-		e.Map["level"] = LevelNameMapping[e.Level]
+		e.Map["level"] = levelNameMapping[e.Level]
 		e.Map["time"] = e.Time.Format(time.RFC3339)
 		if e.File != "" {
 			e.Map["file"] = e.File + ":" + strconv.Itoa(e.Line)
@@ -80,7 +80,7 @@ func (f *JsonFormatter) Format(e *Entry) error {
 		}
 
 		var content string
-		if style, ok := LevelStyleMapping[e.Level]; ok {
+		if style, ok := levelStyleMapping[e.Level]; ok {
 			content = style(string(b))
 		} else {
 			content = string(b)
@@ -107,7 +107,7 @@ func (f *JsonFormatter) Format(e *Entry) error {
 		break
 	}
 
-	if style, ok := LevelStyleMapping[e.Level]; ok {
+	if style, ok := levelStyleMapping[e.Level]; ok {
 		content = style(content)
 	}
 
