@@ -11,9 +11,7 @@ const (
 	InfoLevel
 	WarnLevel
 	ErrorLevel
-	// PanicLevel logs a message, then panics.
 	PanicLevel
-	//FatalLevel logs a message, then calls os.Exit(1).
 	FatalLevel
 )
 

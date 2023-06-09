@@ -62,12 +62,10 @@ func (l *logger) Error(args ...interface{}) {
 
 func (l *logger) Panic(args ...interface{}) {
 	l.entry().write(PanicLevel, FmtEmptySeparate, args...)
-	panic(fmt.Sprint(args...))
 }
 
 func (l *logger) Fatal(args ...interface{}) {
 	l.entry().write(FatalLevel, FmtEmptySeparate, args...)
-	os.Exit(1)
 }
 
 func (l *logger) Debugf(format string, args ...interface{}) {
