@@ -31,7 +31,7 @@ func (f *TextFormatter) Format(e *Entry) error {
 					break
 				}
 			}
-			content += fmt.Sprintf(" %s:%d", short, e.Line)
+			content += fmt.Sprintf(" %s:%d ", short, e.Line)
 		}
 		e.Buffer.WriteString(" ")
 	}
@@ -61,7 +61,7 @@ func (f *JsonFormatter) Format(e *Entry) error {
 		e.Map["level"] = levelNameMapping[e.Level]
 		e.Map["time"] = e.Time.Format(time.RFC3339)
 		if e.File != "" {
-			e.Map["file"] = e.File + ":" + strconv.Itoa(e.Line)
+			e.Map["file"] = e.File + ":" + strconv.Itoa(e.Line) + " "
 			e.Map["func"] = e.Func
 		}
 

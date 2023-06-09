@@ -16,17 +16,6 @@ const (
 )
 
 const (
-	FgHiBlack Color = iota + 90
-	FgHiRed
-	FgHiGreen
-	FgHiYellow
-	FgHiBlue
-	FgHiMagenta
-	FgHiCyan
-	FgHiWhite
-)
-
-const (
 	ShowStyleDefault    uint = 0 //终端默认设置
 	ShowStyleHighLight  uint = 1 //高亮显示
 	ShowStyleUunderline uint = 4 //使用下划线
@@ -40,25 +29,25 @@ func showStyle(showStyle uint, fgColor, bgColor Color, content string) string {
 }
 
 func debugStyle(content string) string {
-	return showStyle(ShowStyleHighLight, FgYellow, 40, content)
+	return showStyle(ShowStyleHighLight, 33, 40, content)
 }
 
 func infoStyle(content string) string {
-	return showStyle(ShowStyleHighLight, FgWhite, 40, content)
+	return showStyle(ShowStyleHighLight, 32, 40, content)
 }
 
 func warnStyle(content string) string {
-	return showStyle(ShowStyleHighLight, FgMagenta, 40, content)
-}
-
-func panicStyle(content string) string {
-	return showStyle(ShowStyleHighLight, FgRed, 40, content)
-}
-
-func fatalStyle(content string) string {
-	return showStyle(ShowStyleHighLight, FgCyan, 40, content)
+	return showStyle(ShowStyleHighLight, 34, 40, content)
 }
 
 func errorStyle(content string) string {
-	return showStyle(ShowStyleHighLight, FgRed, 40, content)
+	return showStyle(ShowStyleHighLight, 31, 40, content)
+}
+
+func panicStyle(content string) string {
+	return showStyle(ShowStyleHighLight, 35, 40, content)
+}
+
+func fatalStyle(content string) string {
+	return showStyle(ShowStyleHighLight, 37, 40, content)
 }

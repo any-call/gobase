@@ -38,10 +38,10 @@ func Test_mylog(t *testing.T) {
 
 	mylog.Debug("this is test")
 	mylog.Info("this is test")
-	mylog.Debug("this is test")
+	mylog.Warn("this is test")
 	mylog.Error("this is test")
-	//mylog.Panic("this is test")
-	//mylog.Fatal("this is test")
+	mylog.Panic("this is test")
+	mylog.Fatal("this is test")
 
 	t.Log("test ok ")
 }

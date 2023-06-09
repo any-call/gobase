@@ -1,9 +1,7 @@
 package mylog
 
 import (
-	"fmt"
 	"io"
-	"os"
 	"sync"
 	"unsafe"
 )
@@ -86,12 +84,10 @@ func (l *logger) Errorf(format string, args ...interface{}) {
 
 func (l *logger) Panicf(format string, args ...interface{}) {
 	l.entry().write(PanicLevel, format, args...)
-	panic(fmt.Sprintf(format, args...))
 }
 
 func (l *logger) Fatalf(format string, args ...interface{}) {
 	l.entry().write(FatalLevel, format, args...)
-	os.Exit(1)
 }
 
 func StdLogger() *logger {
@@ -121,12 +117,10 @@ func Error(args ...interface{}) {
 
 func Panic(args ...interface{}) {
 	std.entry().write(PanicLevel, FmtEmptySeparate, args...)
-	panic(fmt.Sprint(args...))
 }
 
 func Fatal(args ...interface{}) {
 	std.entry().write(FatalLevel, FmtEmptySeparate, args...)
-	os.Exit(1)
 }
 
 func Debugf(format string, args ...interface{}) {
@@ -147,10 +141,8 @@ func Errorf(format string, args ...interface{}) {
 
 func Panicf(format string, args ...interface{}) {
 	std.entry().write(PanicLevel, format, args...)
-	panic(fmt.Sprintf(format, args...))
 }
 
 func Fatalf(format string, args ...interface{}) {
 	std.entry().write(FatalLevel, format, args...)
-	os.Exit(1)
 }
