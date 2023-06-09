@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/any-call/gobase/util/mylist"
+	"github.com/any-call/gobase/util/mylog"
 	"github.com/any-call/gobase/util/myvalidator"
 	"testing"
 )
@@ -29,6 +30,20 @@ func TestList_difference(t *testing.T) {
 
 	c := mylist.Difference[string](a, b)
 	t.Log("union:", c)
+}
+
+func Test_mylog(t *testing.T) {
+	//opt := mylog.WithFormatter(&mylog.JsonFormatter{IgnoreBasicFields: true})
+	//mylog.SetOptions(opt)
+
+	mylog.Debug("this is test")
+	mylog.Info("this is test")
+	mylog.Debug("this is test")
+	mylog.Error("this is test")
+	//mylog.Panic("this is test")
+	//mylog.Fatal("this is test")
+
+	t.Log("test ok ")
 }
 
 func TestList_removeDuplicItem(t *testing.T) {
