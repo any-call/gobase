@@ -5,12 +5,12 @@ import (
 	"sync"
 )
 
-type Map[K, V comparable] struct {
+type Map[K comparable, V any] struct {
 	lock    sync.RWMutex
 	mapList map[K]V
 }
 
-func NewMap[K, V comparable]() *Map[K, V] {
+func NewMap[K comparable, V any]() *Map[K, V] {
 	return new(Map[K, V]).init()
 }
 

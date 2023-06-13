@@ -1,10 +1,10 @@
 package mylist
 
-type node[E comparable] struct {
+type node[E any] struct {
 	value E
 }
 
-func newNode[E comparable](v E) *node[E] {
+func newNode[E any](v E) *node[E] {
 	return new(node[E]).init(v)
 }
 

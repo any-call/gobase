@@ -7,12 +7,12 @@ import (
 	"sync"
 )
 
-type List[E comparable] struct {
+type List[E any] struct {
 	lock sync.RWMutex
 	list []*node[E]
 }
 
-func NewList[E comparable]() *List[E] {
+func NewList[E any]() *List[E] {
 	return new(List[E]).init()
 }
 
