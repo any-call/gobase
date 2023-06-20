@@ -79,6 +79,9 @@ func Test_os(t *testing.T) {
 	b = myos.IsExistFile(path)
 	t.Log("IsExistFile :", b)
 
-	err := myos.Rename(path, "/Users/luisjin/Desktop/ip2Asccode11.txt")
-	t.Log("Rename", err)
+	file := myos.Filename("/dfdf/dfdf")
+	t.Log("Filename :", file)
+
+	dir := myos.Dir("/dfdf/dfdf")
+	t.Log("Dir :", dir)
 }

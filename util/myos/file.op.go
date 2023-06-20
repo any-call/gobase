@@ -2,6 +2,7 @@ package myos
 
 import (
 	"os"
+	"path/filepath"
 )
 
 func IsExistPath(fPath string) bool {
@@ -68,4 +69,14 @@ func Rename(oldPath, newPath string) error {
 	}
 
 	return err
+}
+
+func Filename(fpath string) string {
+	filename := filepath.Base(fpath)
+	return filename
+}
+
+func Dir(fpath string) string {
+	dir := filepath.Dir(fpath)
+	return dir
 }
