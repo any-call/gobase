@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/any-call/gobase/util/mylist"
 	"github.com/any-call/gobase/util/mylog"
+	"github.com/any-call/gobase/util/myos"
 	"github.com/any-call/gobase/util/myvalidator"
 	"testing"
 )
@@ -65,4 +66,19 @@ func Test_ValidEmail(t *testing.T) {
 	b2 := myvalidator.ValidEmail("12121212@cccc.com")
 	t.Log("b1", b1)
 	t.Log("b2", b2)
+}
+
+func Test_os(t *testing.T) {
+	path := "/Users/luisjin/Desktop/ip2Asccode.txt"
+	b := myos.IsExistPath(path)
+	t.Log("IsExistPath :", b)
+
+	b = myos.IsExistDir(path)
+	t.Log("IsExistDir :", b)
+
+	b = myos.IsExistFile(path)
+	t.Log("IsExistFile :", b)
+
+	err := myos.Rename(path, "/Users/luisjin/Desktop/ip2Asccode11.txt")
+	t.Log("Rename", err)
 }
