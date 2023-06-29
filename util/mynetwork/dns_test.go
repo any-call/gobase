@@ -1,7 +1,9 @@
 package mynetwork
 
 import (
+	"fmt"
 	"net"
+	"net/http"
 	"testing"
 	"time"
 )
@@ -20,4 +22,16 @@ func Test_TT(t *testing.T) {
 	}
 
 	t.Log("ns:", ns)
+}
+
+func Test_other(t *testing.T) {
+	domain := "baidu.com" // 替换为要查询的域名
+	resp, err := http.Head("http://" + domain)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+	defer resp.Body.Close()
+	serverType := resp.Header.Get("Server")
+	fmt.Println("Server type:", serverType)
 }
