@@ -1,4 +1,4 @@
-package mynetwork
+package mynet
 
 import (
 	"encoding/json"
