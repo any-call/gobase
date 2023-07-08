@@ -1,4 +1,4 @@
-package mybinddata
+package mybind
 
 import (
 	"fmt"
@@ -17,13 +17,22 @@ func (d Dept) DataChanged(val any) {
 }
 
 func Test_bind(t *testing.T) {
+	type myStruct struct {
+		Name string
+		Sex  int
+	}
+
 	var monitorObj map[string]int = make(map[string]int, 0)
+	//var monitorObj int = 0
+	//var monitorObj myStruct
+	//var monitorObj []int = []int{}
+
 	listener := &Dept{
 		Name:  "jin",
 		Total: 10,
 	}
 
-	if err := ShareBindData.AddListener(listener, &monitorObj); err != nil {
+	if err := AddListener(listener, &monitorObj); err != nil {
 		t.Error(err)
 		return
 	}
@@ -33,8 +42,12 @@ func Test_bind(t *testing.T) {
 		for {
 			i += 5
 			monitorObj["name"] = i
+			//monitorObj = i
+			//monitorObj.Sex = i
+			//monitorObj = append(monitorObj, i)
 			//fmt.Println("set monitorObj :", monitorObj)
 			time.Sleep(time.Second)
+			//break
 		}
 	}()
 

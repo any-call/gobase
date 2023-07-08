@@ -1,4 +1,4 @@
-package mybinddata
+package mybind
 
 // 定义 监听者 标准接口
 type Listener interface {
@@ -11,4 +11,10 @@ type BindData interface {
 	RemoteListener(Listener) error
 }
 
-var ShareBindData BindData = shareBaseBindObj
+func AddListener(l Listener, data any) error {
+	return shareBaseBindObj.AddListener(l, data)
+}
+
+func RemoteListener(l Listener) error {
+	return shareBaseBindObj.RemoteListener(l)
+}

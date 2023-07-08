@@ -1,4 +1,4 @@
-package mybinddata
+package mybind
 
 import (
 	"fmt"
@@ -10,9 +10,10 @@ import (
 var shareBaseBindObj BindData = newBaseBind()
 
 type baseBind struct {
-	listeners sync.Map //map[listener]map[data]true
-	datas     sync.Map //map[data]map[listener]true
-	dataVal   sync.Map // map[data]map[reflect.value]current value
+	listeners    sync.Map //map[listener]map[data]true
+	datas        sync.Map //map[data]map[listener]true
+	dataVal      sync.Map // map[data]map[reflect.value]current value
+	timeDuration time.Duration
 }
 
 func newBaseBind() BindData {
@@ -45,7 +46,7 @@ func (b *baseBind) AddListener(listerer Listener, data any) error {
 	//记录初始化
 	if _, ok := b.dataVal.Load(data); !ok {
 		valMap := &sync.Map{}
-		valMap.Store(newValue, newValue.Interface())
+		valMap.Store(newValue, refValue(newValue))
 		b.dataVal.Store(data, valMap)
 	}
 
@@ -120,10 +121,10 @@ func (b *baseBind) trigger() {
 			if valueMap, ok := value.(*sync.Map); ok {
 				valueMap.Range(func(key, oldVal any) bool {
 					if reValue, ok := key.(reflect.Value); ok {
-						newValue := reValue.Interface()
-						bFlag := reflect.DeepEqual(oldVal, reValue.Interface())
-						if !bFlag {
-							fmt.Println("newValue :", newValue, ";oldValue :", oldVal)
+						newValue := refValue(reValue)
+						bFlag := reflect.DeepEqual(oldVal, newValue)
+						if !bFlag { //值已改变
+							//fmt.Println("newValue :", newValue, ";oldValue :", oldVal)
 							//首先存入新值
 							valueMap.Store(key, newValue)
 
@@ -155,7 +156,12 @@ func (b *baseBind) trigger() {
 			return true
 		})
 
-		time.Sleep(time.Microsecond * 100)
+		if b.timeDuration > 0 {
+			time.Sleep(b.timeDuration)
+		}
 	}
+}
 
+func refValue(v reflect.Value) any {
+	return fmt.Sprintf("%v", v.Interface())
 }
