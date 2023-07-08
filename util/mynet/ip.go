@@ -2,6 +2,7 @@ package mynet
 
 import (
 	"fmt"
+	"github.com/any-call/gobase/util/myos"
 	"net"
 	"net/http"
 )
@@ -37,7 +38,7 @@ func IsPublicIP(IP net.IP) bool {
 
 func IsLocalIP(ip string) bool { return !IsPublicIP(net.ParseIP(ip)) }
 
-func GetLocalDnsIP() (net.IP, error) {
+func GetLocalIP() (net.IP, error) {
 	// 获取本机的网络接口列表
 	interfaces, err := net.Interfaces()
 	if err != nil {
@@ -60,7 +61,7 @@ func GetLocalDnsIP() (net.IP, error) {
 					// 获取DNS服务器地址
 					dnsServers := net.ParseIP(ip.IP.String()).To4()
 					if dnsServers != nil {
-						return dnsServers, nil
+						//return dnsServers, nil
 					}
 				}
 			}
@@ -68,4 +69,38 @@ func GetLocalDnsIP() (net.IP, error) {
 	}
 
 	return nil, fmt.Errorf("unknown err")
+}
+
+func GetLocalDNSServer() ([]string, error) {
+	//https://juejin.cn/s/%E5%A6%82%E4%BD%95%E8%8E%B7%E5%8F%96%E6%9C%AC%E6%9C%BAIp%E7%BD%91%E5%85%B3DNs
+	if myos.IsMac() {
+		//准备参数
+		//var output []byte
+		//cmd := exec.CommandContext(context.Background(), "scutil", "--dns")
+		//output, _ = cmd.CombinedOutput()
+		//
+		//f := strings.NewReader(string(output))
+		//reader := bufio.NewReader(f)
+		//compileRegex := regexp.MustCompile("\\S+")
+		//dns := make([]string, 0)
+		//for {
+		//	line, _, err1 := reader.ReadLine()
+		//	if err1 != nil {
+		//		break
+		//	}
+		//	strTmp := strings.Trim(string(line))
+		//	if strings.HasPrefix(strTmp, "nameserver[") {
+		//
+		//	}
+		//
+		//	matchArr := compileRegex.FindAllStringSubmatch(strTmp, -1)
+		//	if len(matchArr) == 5 {
+		//		if newDomain == matchArr[0][0] && matchArr[3][0] == "NS" {
+		//			nss = append(nss, strings.TrimSuffix(matchArr[4][0], "."))
+		//		}
+		//	}
+		//}
+	}
+
+	return nil, nil
 }

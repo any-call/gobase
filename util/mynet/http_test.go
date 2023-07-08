@@ -8,11 +8,11 @@ import (
 )
 
 func Test_aaaa(t *testing.T) {
-	if dnsip, err := GetLocalDnsIP(); err != nil {
+	if dnsip, err := GetLocalDNSServer(); err != nil {
 		t.Error(err)
 		return
 	} else {
-		t.Log("dns :", dnsip.String())
+		t.Log("dns :", dnsip)
 	}
 
 	t.Log("ret is :")
