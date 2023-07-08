@@ -10,6 +10,7 @@ import (
 var shareBaseBindObj BindData = newBaseBind()
 
 type baseBind struct {
+	sync.Mutex
 	listeners    sync.Map //map[listener]map[data]true
 	datas        sync.Map //map[data]map[listener]true
 	dataVal      sync.Map // map[data]map[reflect.value]current value
@@ -46,7 +47,7 @@ func (b *baseBind) AddListener(listerer Listener, data any) error {
 	//记录初始化
 	if _, ok := b.dataVal.Load(data); !ok {
 		valMap := &sync.Map{}
-		valMap.Store(newValue, refValue(newValue))
+		valMap.Store(newValue, b.refValue(newValue))
 		b.dataVal.Store(data, valMap)
 	}
 
@@ -121,7 +122,7 @@ func (b *baseBind) trigger() {
 			if valueMap, ok := value.(*sync.Map); ok {
 				valueMap.Range(func(key, oldVal any) bool {
 					if reValue, ok := key.(reflect.Value); ok {
-						newValue := refValue(reValue)
+						newValue := b.refValue(reValue)
 						bFlag := reflect.DeepEqual(oldVal, newValue)
 						if !bFlag { //值已改变
 							//fmt.Println("newValue :", newValue, ";oldValue :", oldVal)
@@ -162,6 +163,9 @@ func (b *baseBind) trigger() {
 	}
 }
 
-func refValue(v reflect.Value) any {
+func (b *baseBind) refValue(v reflect.Value) any {
+	b.Lock()
+	defer b.Unlock()
+
 	return fmt.Sprintf("%v", v.Interface())
 }

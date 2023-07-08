@@ -1,6 +1,7 @@
 package mynet
 
 import (
+	"fmt"
 	"net"
 	"net/http"
 )
@@ -35,3 +36,36 @@ func IsPublicIP(IP net.IP) bool {
 }
 
 func IsLocalIP(ip string) bool { return !IsPublicIP(net.ParseIP(ip)) }
+
+func GetLocalDnsIP() (net.IP, error) {
+	// 获取本机的网络接口列表
+	interfaces, err := net.Interfaces()
+	if err != nil {
+		return nil, err
+	}
+	// 遍历每个网络接口
+	for _, iface := range interfaces {
+		// 排除非活动接口和回环接口
+		if iface.Flags&net.FlagUp != 0 && iface.Flags&net.FlagLoopback == 0 {
+			// 获取接口的地址列表
+			addrs, err := iface.Addrs()
+			if err != nil {
+				continue
+			}
+			// 遍历每个地址
+			for _, addr := range addrs {
+				// 检查地址是否为IP地址
+				ip, ok := addr.(*net.IPNet)
+				if ok && !ip.IP.IsLoopback() && ip.IP.To4() != nil {
+					// 获取DNS服务器地址
+					dnsServers := net.ParseIP(ip.IP.String()).To4()
+					if dnsServers != nil {
+						return dnsServers, nil
+					}
+				}
+			}
+		}
+	}
+
+	return nil, fmt.Errorf("unknown err")
+}
