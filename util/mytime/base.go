@@ -1,6 +1,8 @@
 package mytime
 
-import "time"
+import (
+	"time"
+)
 
 const (
 	FormatYYYYMMDDHHMISS = "2006-01-02 15:04:05"
@@ -36,4 +38,12 @@ func GetDaysInMonth(yearInt, month int) (days int) {
 	}
 
 	return 31
+}
+
+func TruncateMillSec(in time.Time) time.Time {
+	return in.Truncate(time.Second)
+}
+
+func TruncateSec(in time.Time) time.Time {
+	return in.Truncate(time.Minute)
 }
