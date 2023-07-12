@@ -10,7 +10,6 @@ import (
 var shareBaseBindObj BindData = newBaseBind()
 
 type baseBind struct {
-	sync.Mutex
 	listeners    sync.Map //map[listener]map[data]true
 	datas        sync.Map //map[data]map[listener]true
 	dataVal      sync.Map // map[data]map[reflect.value]current value
@@ -19,7 +18,6 @@ type baseBind struct {
 
 func newBaseBind() BindData {
 	ret := &baseBind{}
-	go ret.trigger()
 	return ret
 }
 
@@ -116,56 +114,60 @@ func (b *baseBind) RemoteListener(listener Listener) error {
 	return err
 }
 
+func (b *baseBind) SetData(fn func()) {
+	if fn != nil {
+		defer b.trigger()
+		fn()
+	}
+}
+
 func (b *baseBind) trigger() {
-	for {
-		b.dataVal.Range(func(data, value any) bool {
-			if valueMap, ok := value.(*sync.Map); ok {
-				valueMap.Range(func(key, oldVal any) bool {
-					if reValue, ok := key.(reflect.Value); ok {
-						newValue := b.refValue(reValue)
-						bFlag := reflect.DeepEqual(oldVal, newValue)
-						if !bFlag { //值已改变
-							//fmt.Println("newValue :", newValue, ";oldValue :", oldVal)
-							//首先存入新值
-							valueMap.Store(key, newValue)
+	b.dataVal.Range(func(data, value any) bool {
+		if valueMap, ok := value.(*sync.Map); ok {
+			valueMap.Range(func(key, oldVal any) bool {
+				if reValue, ok := key.(reflect.Value); ok {
+					newValue := b.refValue(reValue)
+					bFlag := reflect.DeepEqual(oldVal, newValue)
+					if !bFlag { //值已改变
+						//fmt.Println("newValue :", newValue, ";oldValue :", oldVal)
+						//首先存入新值
+						valueMap.Store(key, newValue)
 
-							//notification to all
-							if valMap, ok := b.datas.Load(data); ok {
-								if listenerMap, ok := valMap.(*sync.Map); ok {
-									var listenerList []Listener = []Listener{}
-									listenerMap.Range(func(key, _ any) bool {
-										if v, ok := key.(Listener); ok {
-											listenerList = append(listenerList, v)
-										}
-										return true
-									})
-
-									if len(listenerList) > 0 {
-										go func(listers []Listener, data any) {
-											for i, _ := range listers {
-												go listers[i].DataChanged(data)
-											}
-										}(listenerList, data)
+						//notification to all
+						if valMap, ok := b.datas.Load(data); ok {
+							if listenerMap, ok := valMap.(*sync.Map); ok {
+								var listenerList []Listener = []Listener{}
+								listenerMap.Range(func(key, _ any) bool {
+									if v, ok := key.(Listener); ok {
+										listenerList = append(listenerList, v)
 									}
+									return true
+								})
+
+								if len(listenerList) > 0 {
+									go func(listers []Listener, data any) {
+										for i, _ := range listers {
+											go listers[i].DataChanged(data)
+										}
+									}(listenerList, data)
 								}
 							}
 						}
 					}
-					return true
-				})
-			}
-			return true
-		})
-
-		if b.timeDuration > 0 {
-			time.Sleep(b.timeDuration)
+				}
+				return true
+			})
 		}
+		return true
+	})
+
+	if b.timeDuration > 0 {
+		time.Sleep(b.timeDuration)
 	}
+
 }
 
 func (b *baseBind) refValue(v reflect.Value) any {
-	b.Lock()
-	defer b.Unlock()
-
+	//newV := mydeepcopy.Copy(v.Interface())
 	return fmt.Sprintf("%v", v.Interface())
 }

@@ -9,6 +9,7 @@ type Listener interface {
 type BindData interface {
 	AddListener(Listener, any) error
 	RemoteListener(Listener) error
+	SetData(fn func())
 }
 
 func AddListener(l Listener, data any) error {
@@ -17,4 +18,8 @@ func AddListener(l Listener, data any) error {
 
 func RemoteListener(l Listener) error {
 	return shareBaseBindObj.RemoteListener(l)
+}
+
+func SetData(fn func()) {
+	shareBaseBindObj.SetData(fn)
 }

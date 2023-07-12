@@ -41,12 +41,18 @@ func Test_bind(t *testing.T) {
 		var i int
 		for {
 			i += 5
-			monitorObj["name"] = i
+			SetData(func() {
+				monitorObj["name"] = i
+			})
+
+			if i > 43305 {
+				RemoteListener(listener)
+			}
 			//monitorObj = i
 			//monitorObj.Sex = i
 			//monitorObj = append(monitorObj, i)
 			//fmt.Println("set monitorObj :", monitorObj)
-			time.Sleep(time.Second)
+			time.Sleep(time.Millisecond)
 			//break
 		}
 	}()
