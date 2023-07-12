@@ -47,3 +47,7 @@ func TruncateMillSec(in time.Time) time.Time {
 func TruncateSec(in time.Time) time.Time {
 	return in.Truncate(time.Minute)
 }
+
+func TruncateMinute(in time.Time) time.Time {
+	return in.Truncate(time.Hour)
+}
