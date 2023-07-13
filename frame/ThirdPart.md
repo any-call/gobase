@@ -8,3 +8,8 @@
 
 ## whois 查询
 # https://github.com/likexian/whois
+
+
+## 其它
+### 自动文件同步 ，暂不了解
+# https://github.com/syncthing/syncthing
