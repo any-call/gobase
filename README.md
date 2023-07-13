@@ -2,6 +2,8 @@
 
 ## util  功能库
 ## frame 基础框架
+### mysignal 事件框架
+### mybing 数据驱动框架
 
 ### 部分已封装库介绍
 ### mylist : 用于封装 切片的常用功能
@@ -65,49 +67,47 @@
 #### }
 
 
-### Sinal Demo 如下:
+### 数据驱动 mybind
 
-##### type User struct {
-##### Name          string
-##### Sex           bool
-##### Age           int
-##### OnAgeChanged  Signal[int]
-##### OnNameChanged Signal[string]
-##### }
+#### type Dept struct {
+#### Name  string
+#### Total int
+#### }
 
-##### func (User *User) AddAge(a int) {
-#####   User.Age = a
-#####   User.OnAgeChanged.Emit(User.Age)
-#####  }
+#### func (d Dept) DataChanged(val any) {
+#### fmt.Println("data change to :", val)
+#### }
 
-##### func (User *User) SetName(a string) {
-##### User.Name = a
-##### User.OnNameChanged.Emit(User.Name)
-##### }
+#### func Test_bind(t *testing.T) {
+#### type myStruct struct {
+#### Name string
+#### Sex  int
+#### }
 
-##### func Test_Signal(t *testing.T) {
-##### user := User{
-##### Name: "luis",
-##### Sex:  false,
-##### Age:  0,
-##### }
+#### var monitorObj map[string]int = make(map[string]int, 0)
 
-#####	Connect[int](&(user.OnAgeChanged), func(i int) error {
-#####		fmt.Println("received ageChanged1 :", i)
-#####		return nil
-#####	})
+#### listener := &Dept{
+####		Name:  "jin",
+####		Total: 10,
+####	}
 
-#####	Connect[int](&(user.OnAgeChanged), func(i int) error {
-#####		fmt.Println("received ageChanged2 :", i)
-#####		return nil
-#####	})
+####	if err := AddListener(listener, &monitorObj); err != nil {
+####		t.Error(err)
+####		return
+####	}
 
-#####	Connect[string](&(user.OnNameChanged), func(name string) error {
-#####		fmt.Println("received nameChanged :", name)
-#####		return nil
-#####	})
+####	go func() {
+####		var i int
+####		for {
+####			i += 5
+####			SetData(func() {
+####				monitorObj["name"] = i
+####			})
 
-#####	user.AddAge(10)
-#####	user.AddAge(11)
-#####	user.SetName("luis")
-##### }
+####			time.Sleep(time.Millisecond)
+####		}
+####	}()
+
+####	time.Sleep(time.Second * 10)
+####	t.Log("run ok ")
+#### }

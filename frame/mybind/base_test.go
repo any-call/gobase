@@ -23,9 +23,6 @@ func Test_bind(t *testing.T) {
 	}
 
 	var monitorObj map[string]int = make(map[string]int, 0)
-	//var monitorObj int = 0
-	//var monitorObj myStruct
-	//var monitorObj []int = []int{}
 
 	listener := &Dept{
 		Name:  "jin",
@@ -45,15 +42,7 @@ func Test_bind(t *testing.T) {
 				monitorObj["name"] = i
 			})
 
-			if i > 43305 {
-				RemoteListener(listener)
-			}
-			//monitorObj = i
-			//monitorObj.Sex = i
-			//monitorObj = append(monitorObj, i)
-			//fmt.Println("set monitorObj :", monitorObj)
 			time.Sleep(time.Millisecond)
-			//break
 		}
 	}()
 
