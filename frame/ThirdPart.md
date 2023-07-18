@@ -9,6 +9,11 @@
 ## whois 查询
 # https://github.com/likexian/whois
 
+## go lua :实现 GO 与 lua 的相互调用
+# https://github.com/yuin/gopher-lua
+
+## 集成第三方认证
+# https://github.com/markbates/goth
 
 ## 其它
 ### 自动文件同步 ，暂不了解
