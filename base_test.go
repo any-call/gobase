@@ -1,11 +1,14 @@
 package cmd
 
 import (
+	"fmt"
+	"github.com/any-call/gobase/frame/myevtbus"
 	"github.com/any-call/gobase/util/mylist"
 	"github.com/any-call/gobase/util/mylog"
 	"github.com/any-call/gobase/util/myos"
 	"github.com/any-call/gobase/util/myvalidator"
 	"testing"
+	"time"
 )
 
 // 测试并集
@@ -84,4 +87,31 @@ func Test_os(t *testing.T) {
 
 	dir := myos.Dir("/dfdf/dfdf")
 	t.Log("Dir :", dir)
+}
+
+func calculator1(a int, b int) {
+	fmt.Printf("%d\n", a+b)
+}
+
+func calculator2(a int, b int) {
+	fmt.Printf("%d\n", (a+b)*10)
+}
+
+func Test_EVTBus(t *testing.T) {
+	bus := myevtbus.New()
+	if err := bus.Subscribe("calculator", calculator1); err != nil {
+		t.Error(err)
+		return
+	}
+
+	if err := bus.SubscribeAsync("calculator", calculator1, true); err != nil {
+		t.Error(err)
+		return
+	}
+
+	bus.Publish("calculator", 20, 30)
+	bus.Unsubscribe("calculator", calculator1)
+	bus.Publish("calculator", 50, 30)
+	time.Sleep(time.Second * 5)
+	t.Log("run ok")
 }
