@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/any-call/gobase/frame/myevtbus"
+	"github.com/any-call/gobase/frame/mynetbus"
 	"github.com/any-call/gobase/util/mylist"
 	"github.com/any-call/gobase/util/mylog"
 	"github.com/any-call/gobase/util/myos"
@@ -114,4 +115,49 @@ func Test_EVTBus(t *testing.T) {
 	bus.Publish("calculator", 50, 30)
 	time.Sleep(time.Second * 5)
 	t.Log("run ok")
+}
+
+func Test_netbus(t *testing.T) {
+	serverBus := mynetbus.NewServer(":2020", "/_server_bus_b")
+	if err := serverBus.Start(); err != nil {
+		t.Error(err)
+		return
+	}
+
+	clientBus := mynetbus.NewClient(":2025", "/_client_bus_b")
+	clientBus.Start()
+
+	clientBus.Subscribe("topic", calculator1, ":2020", "/_server_bus_b")
+	clientBus.EventBus().Publish("topic", 20, 30)
+	serverBus.EventBus().Publish("topic", 10, 50)
+
+	clientBus.Stop()
+	serverBus.Stop()
+}
+
+func TestNetworkBus(t *testing.T) {
+	networkBusA := mynetbus.NewNetworkBus(":2035", "/_net_bus_A")
+	networkBusA.Start()
+
+	networkBusB := mynetbus.NewNetworkBus(":2030", "/_net_bus_B")
+	networkBusB.Start()
+
+	fnA := func(a int) {
+		if a != 10 {
+			t.Fail()
+		}
+	}
+	networkBusA.Subscribe("topic-A", fnA, ":2030", "/_net_bus_B")
+	networkBusB.EventBus().Publish("topic-A", 10)
+
+	fnB := func(a int) {
+		if a != 20 {
+			t.Fail()
+		}
+	}
+	networkBusB.Subscribe("topic-B", fnB, ":2035", "/_net_bus_A")
+	networkBusA.EventBus().Publish("topic-B", 20)
+
+	networkBusA.Stop()
+	networkBusB.Stop()
 }

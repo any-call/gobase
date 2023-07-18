@@ -87,6 +87,18 @@ func (l *Map[K, V]) Range(f func(key K, value V)) {
 	}
 }
 
+func (l *Map[K, V]) Search(f func(key K, value V) bool) {
+	l.lock.RLock()
+	defer l.lock.RUnlock()
+
+	for i, v := range l.mapList {
+		if b := f(i, v); b {
+			goto end
+		}
+	}
+end:
+}
+
 func (l *Map[K, V]) Len() int {
 	l.lock.RLock()
 	defer l.lock.RUnlock()

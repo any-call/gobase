@@ -5,12 +5,12 @@ import (
 	"sync"
 )
 
-type MultiMap[K, V comparable] struct {
+type MultiMap[K comparable, V any] struct {
 	lock    sync.RWMutex
 	mapList map[K][]V
 }
 
-func NewMultiMap[K, V comparable]() *MultiMap[K, V] {
+func NewMultiMap[K comparable, V any]() *MultiMap[K, V] {
 	return new(MultiMap[K, V]).init()
 }
 
@@ -57,6 +57,24 @@ func (l *MultiMap[K, V]) Remove(key K) {
 	return
 }
 
+func (l *MultiMap[K, V]) RemoveAtIndex(key K, index int) {
+	l.lock.Lock()
+	defer l.lock.Unlock()
+
+	if values, ok := l.mapList[key]; ok { //存在Key
+		if index < len(values) && index >= 0 { //存在索引
+			values = append(values[:index], values[index+1:]...)
+			if len(values) == 0 {
+				delete(l.mapList, key)
+			} else {
+				l.mapList[key] = values
+			}
+		}
+	}
+
+	return
+}
+
 func (l *MultiMap[K, V]) TakeAt(k K) (v V, b bool) {
 	l.lock.Lock()
 	defer l.lock.Unlock()
@@ -92,6 +110,15 @@ func (l *MultiMap[K, V]) Value(k K) (v V, b bool) {
 	return
 }
 
+func (l *MultiMap[K, V]) HasKey(k K) bool {
+	l.lock.RLock()
+	defer l.lock.RUnlock()
+
+	_, b := l.mapList[k]
+
+	return b
+}
+
 func (l *MultiMap[K, V]) Values(key K) (values []V, b bool) {
 	l.lock.RLock()
 	defer l.lock.RUnlock()
@@ -121,6 +148,43 @@ func (l *MultiMap[K, V]) Range(f func(key K, value V)) {
 			f(i, v)
 		}
 	}
+}
+
+func (l *MultiMap[K, V]) RangeKey(key K, f func(index int, value V)) {
+	if values, b := l.Values(key); b {
+		l.lock.RLock()
+		defer l.lock.RUnlock()
+		for i, v := range values {
+			f(i, v)
+		}
+	}
+}
+
+func (l *MultiMap[K, V]) Search(f func(key K, value V) bool) {
+	l.lock.RLock()
+	defer l.lock.RUnlock()
+
+	for i, values := range l.mapList {
+		for _, v := range values {
+			if b := f(i, v); b {
+				goto end
+			}
+		}
+	}
+end:
+}
+
+func (l *MultiMap[K, V]) SearchKey(key K, f func(index int, value V) bool) {
+	if values, b := l.Values(key); b {
+		l.lock.RLock()
+		defer l.lock.RUnlock()
+		for i, v := range values {
+			if b := f(i, v); b {
+				goto end
+			}
+		}
+	}
+end:
 }
 
 func (l *MultiMap[K, V]) Len() int {

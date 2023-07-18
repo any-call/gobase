@@ -56,7 +56,7 @@ func (l *List[E]) RemoveAt(index int) error {
 		return errors.New("outside of range")
 	}
 
-	l.list = append(l.list[:index], append([]*node[E]{}, l.list[index+1:]...)...)
+	l.list = append(l.list[:index], l.list[index+1:]...)
 	return nil
 }
 
