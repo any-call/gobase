@@ -3,9 +3,9 @@ package mybus
 // 订阅标准
 type BusSubscriber interface {
 	Subscribe(key string, fn any) error
-	SubscribeAsync(key string, fn any, sequence bool) error
+	SubscribeAsync(key string, fn any) error
 	SubscribeOnce(key string, fn any) error
-	SubscribeOnceAsync(key string, fn any, sequence bool) error
+	SubscribeOnceAsync(key string, fn any) error
 	Unsubscribe(key string, fn any)
 }
 

@@ -9,23 +9,21 @@ import (
 
 // event Handler
 type eventHandler struct {
-	sync.Mutex
-	callBack     reflect.Value
-	flagOnce     bool //只运行一次
-	flagAsync    bool //异步执行
-	flagSequence bool //异步序列执行标识
+	callBack  reflect.Value
+	flagOnce  bool //只运行一次
+	flagAsync bool //异步执行
 }
 
 type eventBus struct {
 	sync.Mutex
-	handlers mymap.MultiMap[string, *eventHandler]
+	handlers *mymap.MultiMap[string, *eventHandler]
 	wg       sync.WaitGroup
 }
 
 func NewEventBus() EventBus {
 	return &eventBus{
 		Mutex:    sync.Mutex{},
-		handlers: mymap.MultiMap[string, *eventHandler]{},
+		handlers: mymap.NewMultiMap[string, *eventHandler](),
 		wg:       sync.WaitGroup{},
 	}
 }
@@ -46,41 +44,33 @@ func (self *eventBus) doSubscribe(key string, fn any, ehandler *eventHandler) er
 
 func (self *eventBus) Subscribe(key string, fn any) error {
 	return self.doSubscribe(key, fn, &eventHandler{
-		Mutex:        sync.Mutex{},
-		callBack:     reflect.ValueOf(fn),
-		flagOnce:     false,
-		flagAsync:    false,
-		flagSequence: false,
+		callBack:  reflect.ValueOf(fn),
+		flagOnce:  false,
+		flagAsync: false,
 	})
 }
 
-func (self *eventBus) SubscribeAsync(key string, fn any, sequence bool) error {
+func (self *eventBus) SubscribeAsync(key string, fn any) error {
 	return self.doSubscribe(key, fn, &eventHandler{
-		Mutex:        sync.Mutex{},
-		callBack:     reflect.ValueOf(fn),
-		flagOnce:     false,
-		flagAsync:    true,
-		flagSequence: sequence,
+		callBack:  reflect.ValueOf(fn),
+		flagOnce:  false,
+		flagAsync: true,
 	})
 }
 
 func (self *eventBus) SubscribeOnce(key string, fn any) error {
 	return self.doSubscribe(key, fn, &eventHandler{
-		Mutex:        sync.Mutex{},
-		callBack:     reflect.ValueOf(fn),
-		flagOnce:     true,
-		flagAsync:    false,
-		flagSequence: false,
+		callBack:  reflect.ValueOf(fn),
+		flagOnce:  true,
+		flagAsync: false,
 	})
 }
 
-func (self *eventBus) SubscribeOnceAsync(key string, fn any, sequence bool) error {
+func (self *eventBus) SubscribeOnceAsync(key string, fn any) error {
 	return self.doSubscribe(key, fn, &eventHandler{
-		Mutex:        sync.Mutex{},
-		callBack:     reflect.ValueOf(fn),
-		flagOnce:     true,
-		flagAsync:    true,
-		flagSequence: sequence,
+		callBack:  reflect.ValueOf(fn),
+		flagOnce:  true,
+		flagAsync: true,
 	})
 }
 
@@ -123,21 +113,21 @@ func (self *eventBus) Publish(key string, args ...any) {
 	if list, b := self.handlers.Values(key); b {
 		copyHandlers := make([]*eventHandler, len(list))
 		copy(copyHandlers, list)
+		var delCount int = 0
 		for i, handler := range copyHandlers {
 			if handler.flagOnce {
-				self.handlers.RemoveAtIndex(key, i)
+				self.handlers.RemoveAtIndex(key, i-delCount)
+				delCount++
 			}
 
 			if !handler.flagAsync {
 				self.doPublish(handler, args...)
 			} else {
 				self.wg.Add(1)
-				if handler.flagSequence {
-					self.Unlock()
-					handler.Lock()
-					self.Lock()
-				}
-				go self.doPublishAsync(handler, args...)
+				go func(h *eventHandler) {
+					defer self.wg.Done()
+					self.doPublish(h, args...)
+				}(handler)
 			}
 		}
 	}
@@ -154,20 +144,12 @@ func (self *eventBus) WaitAsync() {
 func (self *eventBus) doPublish(handler *eventHandler, args ...any) error {
 	passedArguments, err := self.setupPublish(handler, args...)
 	if err != nil {
+		fmt.Println("doPublish err:", err)
 		return err
 	}
 
 	handler.callBack.Call(passedArguments)
 	return nil
-}
-
-func (self *eventBus) doPublishAsync(handler *eventHandler, args ...any) error {
-	defer self.wg.Done()
-	if handler.flagSequence {
-		defer handler.Unlock()
-	}
-
-	return self.doPublish(handler, args...)
 }
 
 func (self *eventBus) setupPublish(handler *eventHandler, args ...any) ([]reflect.Value, error) {

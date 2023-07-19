@@ -2,29 +2,50 @@ package mybus
 
 import (
 	"fmt"
-	"sync"
 	"testing"
 )
 
+type MyType int
+
+func (self *MyType) Math(str string) {
+	fmt.Println("math :", str, *self)
+}
+
 func TestEventBus_Publish(t *testing.T) {
-	wg := sync.WaitGroup{}
-	wg.Add(3)
+	var aa MyType = 10
+	var bb1 MyType = 110
+	var bb2 MyType = 120
+	var cc MyType = 140
+	var dd MyType = 150
 
-	go func() {
-		defer wg.Done()
-		fmt.Println("run 1")
-	}()
+	evtBus := NewEventBus()
+	if err := evtBus.SubscribeAsync("math", aa.Math); err != nil {
+		t.Error(err)
+		return
+	}
 
-	go func() {
-		defer wg.Done()
-		fmt.Println("run 2")
-	}()
+	if err := evtBus.SubscribeAsync("math", bb1.Math); err != nil {
+		t.Error(err)
+		return
+	}
 
-	go func() {
-		defer wg.Done()
-		fmt.Println("run 3")
-	}()
+	if err := evtBus.SubscribeAsync("math", bb2.Math); err != nil {
+		t.Error(err)
+		return
+	}
 
-	wg.Wait()
-	t.Log("run over")
+	if err := evtBus.SubscribeOnceAsync("math", cc.Math); err != nil {
+		t.Error(err)
+		return
+	}
+
+	if err := evtBus.SubscribeOnceAsync("math", dd.Math); err != nil {
+		t.Error(err)
+		return
+	}
+
+	evtBus.Publish("math", "this is aa")
+	evtBus.WaitAsync()
+
+	t.Log("run ok")
 }
