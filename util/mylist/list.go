@@ -84,6 +84,15 @@ func (l *List[E]) RemoveLast() error {
 	return nil
 }
 
+func (l *List[E]) Clear() {
+	l.lock.Lock()
+	defer l.lock.Unlock()
+
+	l.init()
+
+	return
+}
+
 func (l *List[E]) Move(from, to int) error {
 	l.lock.Lock()
 	defer l.lock.Unlock()
