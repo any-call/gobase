@@ -232,6 +232,16 @@ func (l *List[E]) Range(f func(index int, v E)) {
 	}
 }
 
+func (l *List[E]) ToArray() []E {
+	l.lock.RLock()
+	defer l.lock.RUnlock()
+	ret := make([]E, len(l.list))
+	for i, _ := range l.list {
+		ret[i] = l.list[i].Value()
+	}
+	return ret
+}
+
 func (l *List[E]) String() string {
 	l.lock.RLock()
 	defer l.lock.RUnlock()
