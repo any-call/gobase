@@ -86,7 +86,7 @@ func (client *Client) Start() error {
 	if !service.started {
 		server := rpc.NewServer()
 		server.Register(service)
-		server.HandleHTTP(client.path, "/debug"+client.path)
+		server.HandleHTTP(client.path, "/"+client.path)
 		l, err := net.Listen("tcp", client.address)
 		if err == nil {
 			service.wg.Add(1)

@@ -99,7 +99,7 @@ func (server *Server) Start() error {
 	if !service.started {
 		rpcServer := rpc.NewServer()
 		rpcServer.Register(service)
-		rpcServer.HandleHTTP(server.path, "/debug"+server.path)
+		rpcServer.HandleHTTP(server.path, "/"+server.path)
 		l, e := net.Listen("tcp", server.address)
 		if e != nil {
 			err = e
