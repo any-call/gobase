@@ -5,47 +5,27 @@ import (
 	"testing"
 )
 
-type MyType int
+type MyType struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
 
-func (self *MyType) Math(str string) {
-	fmt.Println("math :", str, *self)
+func Math(a MyType) {
+	fmt.Println("math :", a.ID, a.Name)
 }
 
 func TestEventBus_Publish(t *testing.T) {
-	var aa MyType = 10
-	var bb1 MyType = 110
-	var bb2 MyType = 120
-	var cc MyType = 140
-	var dd MyType = 150
-
 	evtBus := NewEventBus()
-	if err := evtBus.SubscribeAsync("math", aa.Math); err != nil {
+	if err := evtBus.SubscribeAsync("math", Math); err != nil {
 		t.Error(err)
 		return
 	}
 
-	if err := evtBus.SubscribeAsync("math", bb1.Math); err != nil {
-		t.Error(err)
-		return
-	}
+	evtBus.Publish("math", MyType{
+		ID:   100,
+		Name: "luis.jin",
+	})
 
-	if err := evtBus.SubscribeAsync("math", bb2.Math); err != nil {
-		t.Error(err)
-		return
-	}
-
-	if err := evtBus.SubscribeOnceAsync("math", cc.Math); err != nil {
-		t.Error(err)
-		return
-	}
-
-	if err := evtBus.SubscribeOnceAsync("math", dd.Math); err != nil {
-		t.Error(err)
-		return
-	}
-
-	evtBus.Publish("math", "this is aa")
 	evtBus.WaitAsync()
-
 	t.Log("run ok")
 }

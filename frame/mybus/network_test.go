@@ -23,12 +23,12 @@ func Test_network(t *testing.T) {
 		clientBus.Start()
 
 		clientBus.Subscribe("topic", fn, ":2020", "/_server_bus_b")
-		clientBus.Bus().Publish("topic", "client bus publish", MyType{
-			ID:   1,
-			Name: "luis.jin",
-		})
+		//clientBus.Bus().Publish("topic", MyType{
+		//	ID:   50,
+		//	Name: "luis.jin",
+		//})
 
-		//serverBus.Bus().Publish("topic", "server bus publish", MyType{
+		//serverBus.Bus().Publish("topic", MyType{
 		//	ID:   2,
 		//	Name: "king.king",
 		//})
