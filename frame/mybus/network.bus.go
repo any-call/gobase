@@ -12,8 +12,8 @@ import (
 // NetworkBus - object capable of subscribing to remote event buses in addition to remote event
 // busses subscribing to it's local event bus. Compoed of a server and client
 type NetworkBus struct {
-	*Client
-	*Server
+	ClientBus
+	ServerBus
 	service   *NetworkBusService
 	sharedBus EventBus
 	address   string
@@ -24,8 +24,8 @@ type NetworkBus struct {
 func NewNetworkBus(address, path string) *NetworkBus {
 	bus := new(NetworkBus)
 	bus.sharedBus = NewEventBus()
-	bus.Server = NewServer(address, path, bus.sharedBus)
-	bus.Client = NewClient(address, path, bus.sharedBus)
+	bus.ServerBus = NewServer(address, path, bus.sharedBus)
+	bus.ClientBus = NewClient(address, path, bus.sharedBus)
 	bus.service = &NetworkBusService{&sync.WaitGroup{}, false}
 	bus.address = address
 	bus.path = path
@@ -54,8 +54,8 @@ func (networkBus *NetworkBus) Start() error {
 
 	var err error
 	service := networkBus.service
-	clientService := networkBus.Client.service
-	serverService := networkBus.Server.service
+	clientService := networkBus.ClientBus.Service()
+	serverService := networkBus.ServerBus.Service()
 	if !service.started {
 		server := rpc.NewServer()
 		server.RegisterName("ServerService", serverService)

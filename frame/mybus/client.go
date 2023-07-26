@@ -21,7 +21,7 @@ type ClientArg struct {
 }
 
 // Client - object capable of subscribing to a remote event bus
-type Client struct {
+type client struct {
 	eventBus EventBus
 	address  string
 	path     string
@@ -29,24 +29,36 @@ type Client struct {
 }
 
 // NewClient - create a client object with the address and server path
-func NewClient(address, path string, bus EventBus) *Client {
+func NewClient(address, path string, bus EventBus) ClientBus {
 	if bus == nil {
 		bus = NewEventBus()
 	}
-	client := new(Client)
-	client.eventBus = bus
-	client.address = address
-	client.path = path
-	client.service = &ClientService{client, &sync.WaitGroup{}, false}
-	return client
+	clientBus := new(client)
+	clientBus.eventBus = bus
+	clientBus.address = address
+	clientBus.path = path
+	clientBus.service = &ClientService{clientBus, &sync.WaitGroup{}, false}
+	return clientBus
 }
 
 // EventBus - returns the underlying event bus
-func (client *Client) Bus() EventBus {
-	return client.eventBus
+func (self *client) Bus() EventBus {
+	return self.eventBus
 }
 
-func (client *Client) doSubscribe(topic string, fn interface{}, serverAddr, serverPath string, subscribeType SubscribeType) {
+func (self *client) Service() *ClientService {
+	return self.service
+}
+
+func (self *client) ServerAddr() string {
+	return self.address
+}
+
+func (self *client) ServerPath() string {
+	return self.path
+}
+
+func (self *client) doSubscribe(topic string, fn interface{}, serverAddr, serverPath string, subscribeType SubscribeType) error {
 	defer func() {
 		if r := recover(); r != nil {
 			fmt.Println("Server not found -", r)
@@ -56,31 +68,33 @@ func (client *Client) doSubscribe(topic string, fn interface{}, serverAddr, serv
 	rpcClient, err := rpc.DialHTTPPath("tcp", serverAddr, serverPath)
 	defer rpcClient.Close()
 	if err != nil {
-		fmt.Errorf("dialing: %v", err)
+		return fmt.Errorf("dialing: %v", err)
 	}
-	args := &SubscribeArg{client.address, client.path, PublishService, subscribeType, topic}
+	args := &SubscribeArg{self.address, self.path, PublishService, subscribeType, topic}
 	reply := new(bool)
 	err = rpcClient.Call(RegisterService, args, reply)
 	if err != nil {
-		fmt.Errorf("Register error: %v", err)
+		return fmt.Errorf("Register error: %v", err)
 	}
 	if *reply {
-		client.eventBus.Subscribe(topic, fn)
+		return self.Bus().Subscribe(topic, fn)
 	}
+
+	return fmt.Errorf("rpc call not response")
 }
 
 // Subscribe subscribes to a topic in a remote event bus
-func (client *Client) Subscribe(topic string, fn interface{}, serverAddr, serverPath string) {
-	client.doSubscribe(topic, fn, serverAddr, serverPath, Subscribe)
+func (self *client) Subscribe(topic string, fn interface{}, serverAddr, serverPath string) error {
+	return self.doSubscribe(topic, fn, serverAddr, serverPath, Subscribe)
 }
 
 // SubscribeOnce subscribes once to a topic in a remote event bus
-func (client *Client) SubscribeOnce(topic string, fn interface{}, serverAddr, serverPath string) {
-	client.doSubscribe(topic, fn, serverAddr, serverPath, SubscribeOnce)
+func (self *client) SubscribeOnce(topic string, fn interface{}, serverAddr, serverPath string) error {
+	return self.doSubscribe(topic, fn, serverAddr, serverPath, SubscribeOnce)
 }
 
 // Start - starts the client service to listen to remote events
-func (client *Client) Start() error {
+func (self *client) Start() error {
 	defer func() {
 		p := recover()
 		if p != nil {
@@ -89,12 +103,15 @@ func (client *Client) Start() error {
 	}()
 
 	var err error
-	service := client.service
+	service := self.service
 	if !service.started {
 		server := rpc.NewServer()
-		server.Register(service)
-		server.HandleHTTP(client.path, "/"+client.path)
-		l, err := net.Listen("tcp", client.address)
+		if err := server.Register(service); err != nil {
+			return err
+		}
+
+		server.HandleHTTP(self.path, "/"+self.path)
+		l, err := net.Listen("tcp", self.address)
 		if err == nil {
 			service.wg.Add(1)
 			service.started = true
@@ -107,8 +124,8 @@ func (client *Client) Start() error {
 }
 
 // Stop - signal for the service to stop serving
-func (client *Client) Stop() {
-	service := client.service
+func (self *client) Stop() {
+	service := self.service
 	if service.started {
 		service.wg.Done()
 		service.started = false
@@ -117,7 +134,7 @@ func (client *Client) Stop() {
 
 // ClientService - service object listening to events published in a remote event bus
 type ClientService struct {
-	client  *Client
+	client  ClientBus
 	wg      *sync.WaitGroup
 	started bool
 }
@@ -125,7 +142,7 @@ type ClientService struct {
 // PushEvent - exported service to listening to remote events
 func (service *ClientService) PushEvent(arg *ClientArg, reply *bool) error {
 	fmt.Println("received event", arg.Topic, arg.Args)
-	service.client.eventBus.Publish(arg.Topic, arg.Args...)
+	service.client.Bus().Publish(arg.Topic, arg.Args...)
 	*reply = true
 	return nil
 }

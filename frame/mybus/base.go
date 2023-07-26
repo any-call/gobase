@@ -1,5 +1,7 @@
 package mybus
 
+import "github.com/any-call/gobase/util/mymap"
+
 // 订阅标准
 type BusSubscriber interface {
 	Subscribe(key string, fn any) error
@@ -33,5 +35,14 @@ type ClientBus interface {
 	RpcBus
 	Subscribe(key string, fn any, serverAddr, serverPath string) error
 	SubscribeOnce(key string, fn any, serverAddr, serverPath string) error
-	PushEvent(arg *ClientArg, reply *bool) error
+	Service() *ClientService
+}
+
+type ServerBus interface {
+	RpcBus
+	RegisterType(param any)
+	HasClientSubscribed(arg *SubscribeArg) bool
+	ClientSubscribed() *mymap.MultiMap[string, *SubscribeArg]
+	RPCCallback(arg *SubscribeArg) func(args ...interface{})
+	Service() *ServerService
 }

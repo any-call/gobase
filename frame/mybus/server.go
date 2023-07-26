@@ -4,6 +4,7 @@ import (
 	"encoding/gob"
 	"errors"
 	"fmt"
+	"github.com/any-call/gobase/util/mymap"
 	"net"
 	"net/http"
 	"net/rpc"
@@ -35,41 +36,53 @@ type SubscribeArg struct {
 }
 
 // Server - object capable of being subscribed to by remote handlers
-type Server struct {
+type server struct {
 	eventBus    EventBus
 	address     string
 	path        string
-	subscribers map[string][]*SubscribeArg
+	subscribers *mymap.MultiMap[string, *SubscribeArg]
 	service     *ServerService
 }
 
 // NewServer - create a new Server at the address and path
-func NewServer(address, path string, bus EventBus) *Server {
+func NewServer(address, path string, bus EventBus) ServerBus {
 	if bus == nil {
 		bus = NewEventBus()
 	}
 
-	server := new(Server)
-	server.eventBus = bus
-	server.address = address
-	server.path = path
-	server.subscribers = make(map[string][]*SubscribeArg)
-	server.service = &ServerService{server, &sync.WaitGroup{}, false}
-	return server
+	serverBus := new(server)
+	serverBus.eventBus = bus
+	serverBus.address = address
+	serverBus.path = path
+	serverBus.subscribers = mymap.NewMultiMap[string, *SubscribeArg]()
+	serverBus.service = &ServerService{serverBus, &sync.WaitGroup{}, false}
+	return serverBus
 }
 
 // EventBus - returns wrapped event bus
-func (server *Server) Bus() EventBus {
-	return server.eventBus
+func (self *server) Bus() EventBus {
+	return self.eventBus
 }
 
-func (Server *Server) RegisterParamType(param any) {
+func (self *server) RegisterType(param any) {
 	if param != nil {
 		gob.Register(param)
 	}
 }
 
-func (server *Server) rpcCallback(subscribeArg *SubscribeArg) func(args ...interface{}) {
+func (self *server) Service() *ServerService {
+	return self.service
+}
+
+func (self *server) ServerAddr() string {
+	return self.address
+}
+
+func (self *server) ServerPath() string {
+	return self.path
+}
+
+func (self *server) RPCCallback(subscribeArg *SubscribeArg) func(args ...interface{}) {
 	return func(args ...interface{}) {
 		client, connErr := rpc.DialHTTPPath("tcp", subscribeArg.ClientAddr, subscribeArg.ClientPath)
 		defer client.Close()
@@ -88,8 +101,8 @@ func (server *Server) rpcCallback(subscribeArg *SubscribeArg) func(args ...inter
 }
 
 // HasClientSubscribed - True if a client subscribed to this server with the same topic
-func (server *Server) HasClientSubscribed(arg *SubscribeArg) bool {
-	if topicSubscribers, ok := server.subscribers[arg.Topic]; ok {
+func (self *server) HasClientSubscribed(arg *SubscribeArg) bool {
+	if topicSubscribers, ok := self.subscribers.Values(arg.Topic); ok {
 		for _, topicSubscriber := range topicSubscribers {
 			if *topicSubscriber == *arg {
 				return true
@@ -99,25 +112,31 @@ func (server *Server) HasClientSubscribed(arg *SubscribeArg) bool {
 	return false
 }
 
+func (self *server) ClientSubscribed() *mymap.MultiMap[string, *SubscribeArg] {
+	return self.subscribers
+}
+
 // Start - starts a service for remote clients to subscribe to events
-func (server *Server) Start() error {
+func (self *server) Start() error {
 	defer func() {
 		p := recover()
 		if p != nil {
 			fmt.Println("start panic", p)
 		}
 	}()
-	
+
 	var err error
-	service := server.service
+	service := self.service
 	if !service.started {
 		rpcServer := rpc.NewServer()
-		rpcServer.Register(service)
-		rpcServer.HandleHTTP(server.path, "/"+server.path)
-		l, e := net.Listen("tcp", server.address)
+		if err = rpcServer.Register(service); err != nil {
+			return err
+		}
+
+		rpcServer.HandleHTTP(self.path, "/"+self.path)
+		l, e := net.Listen("tcp", self.address)
 		if e != nil {
-			err = e
-			fmt.Errorf("listen error: %v", e)
+			return fmt.Errorf("listen error: %v", e)
 		}
 		service.started = true
 		service.wg.Add(1)
@@ -129,8 +148,8 @@ func (server *Server) Start() error {
 }
 
 // Stop - signal for the service to stop serving
-func (server *Server) Stop() {
-	service := server.service
+func (self *server) Stop() {
+	service := self.service
 	if service.started {
 		service.wg.Done()
 		service.started = false
@@ -139,35 +158,33 @@ func (server *Server) Stop() {
 
 // ServerService - service object to listen to remote subscriptions
 type ServerService struct {
-	server  *Server
-	wg      *sync.WaitGroup
-	started bool
+	serverBus ServerBus
+	wg        *sync.WaitGroup
+	started   bool
 }
 
 // Register - Registers a remote handler to this event bus
 // for a remote subscribe - a given client address only needs to subscribe once
 // event will be republished in local event bus
 func (service *ServerService) Register(arg *SubscribeArg, success *bool) error {
-	subscribers := service.server.subscribers
-	if !service.server.HasClientSubscribed(arg) {
-		rpcCallback := service.server.rpcCallback(arg)
+	subscribers := service.serverBus.ClientSubscribed()
+	if !service.serverBus.HasClientSubscribed(arg) {
+		rpcCallback := service.serverBus.RPCCallback(arg)
 		switch arg.SubscribeType {
 		case Subscribe:
-			service.server.eventBus.Subscribe(arg.Topic, rpcCallback)
+			if err := service.serverBus.Bus().Subscribe(arg.Topic, rpcCallback); err != nil {
+				return err
+			}
 			break
 
 		case SubscribeOnce:
-			service.server.eventBus.SubscribeOnce(arg.Topic, rpcCallback)
+			if err := service.serverBus.Bus().SubscribeOnce(arg.Topic, rpcCallback); err != nil {
+				return err
+			}
 			break
 		}
-		var topicSubscribers []*SubscribeArg
-		if _, ok := subscribers[arg.Topic]; ok {
-			topicSubscribers = []*SubscribeArg{arg}
-		} else {
-			topicSubscribers = subscribers[arg.Topic]
-			topicSubscribers = append(topicSubscribers, arg)
-		}
-		subscribers[arg.Topic] = topicSubscribers
+
+		subscribers.Insert(arg.Topic, arg)
 	}
 	*success = true
 	return nil
