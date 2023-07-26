@@ -20,3 +20,18 @@ type EventBus interface {
 	BusSubscriber
 	BusPublisher
 }
+
+type RpcBus interface {
+	Start() error
+	Stop()
+	ServerAddr() string
+	ServerPath() string
+	Bus() EventBus
+}
+
+type ClientBus interface {
+	RpcBus
+	Subscribe(key string, fn any, serverAddr, serverPath string) error
+	SubscribeOnce(key string, fn any, serverAddr, serverPath string) error
+	PushEvent(arg *ClientArg, reply *bool) error
+}
