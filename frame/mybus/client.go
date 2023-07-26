@@ -46,7 +46,7 @@ func (self *client) Bus() EventBus {
 	return self.eventBus
 }
 
-func (self *client) Service() *ClientService {
+func (self *client) ClientService() *ClientService {
 	return self.service
 }
 

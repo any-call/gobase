@@ -35,7 +35,7 @@ type ClientBus interface {
 	RpcBus
 	Subscribe(key string, fn any, serverAddr, serverPath string) error
 	SubscribeOnce(key string, fn any, serverAddr, serverPath string) error
-	Service() *ClientService
+	ClientService() *ClientService
 }
 
 type ServerBus interface {
@@ -44,5 +44,10 @@ type ServerBus interface {
 	HasClientSubscribed(arg *SubscribeArg) bool
 	ClientSubscribed() *mymap.MultiMap[string, *SubscribeArg]
 	RPCCallback(arg *SubscribeArg) func(args ...interface{})
-	Service() *ServerService
+	ServerService() *ServerService
+}
+
+type NetworkBus interface {
+	ClientBus
+	ServerBus
 }

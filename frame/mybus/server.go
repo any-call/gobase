@@ -70,7 +70,7 @@ func (self *server) RegisterType(param any) {
 	}
 }
 
-func (self *server) Service() *ServerService {
+func (self *server) ServerService() *ServerService {
 	return self.service
 }
 

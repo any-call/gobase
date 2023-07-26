@@ -39,39 +39,39 @@ func Test_network(t *testing.T) {
 		serverBus.Stop()
 	})
 
-	//t.Run("client", func(t *testing.T) {
-	//	clientBus := NewClient("localhost:2015", "/_client_bus_", nil)
-	//
-	//	eventArgs := make([]interface{}, 1)
-	//	eventArgs[0] = 10
-	//
-	//	clientArg := &ClientArg{eventArgs, "topic"}
-	//	reply := new(bool)
-	//
-	//	fn := func(a int) {
-	//		if a != 10 {
-	//			t.Fail()
-	//		}
-	//	}
-	//
-	//	clientBus.Bus().Subscribe("topic", fn)
-	//	clientBus.Service().PushEvent(clientArg, reply)
-	//	if !(*reply) {
-	//		t.Fail()
-	//	}
-	//})
-	//
-	//t.Run("newwork", func(t *testing.T) {
-	//	netBusA := NewNetworkBus(":2035", "/net_A_bus")
-	//	netBusA.Start()
-	//
-	//	netBusB := NewNetworkBus(":2036", "/net_B_bus")
-	//	netBusB.Start()
-	//
-	//	fnA := func(a int) {
-	//		fmt.Println("fnA ..", a)
-	//	}
-	//	netBusA.Subscribe("topic", fnA, ":2036", "/net_B_bus")
-	//	netBusB.Bus().Publish("topic", 2323)
-	//})
+	t.Run("client", func(t *testing.T) {
+		clientBus := NewClient("localhost:2015", "/_client_bus_", nil)
+
+		eventArgs := make([]interface{}, 1)
+		eventArgs[0] = 10
+
+		clientArg := &ClientArg{eventArgs, "topic"}
+		reply := new(bool)
+
+		fn := func(a int) {
+			if a != 10 {
+				t.Fail()
+			}
+		}
+
+		clientBus.Bus().Subscribe("topic", fn)
+		clientBus.ClientService().PushEvent(clientArg, reply)
+		if !(*reply) {
+			t.Fail()
+		}
+	})
+
+	t.Run("newwork", func(t *testing.T) {
+		netBusA := NewNetworkBus(":2035", "/net_A_bus")
+		netBusA.Start()
+
+		netBusB := NewNetworkBus(":2036", "/net_B_bus")
+		netBusB.Start()
+
+		fnA := func(a int) {
+			fmt.Println("fnA ..", a)
+		}
+		netBusA.Subscribe("topic", fnA, ":2036", "/net_B_bus")
+		netBusB.Bus().Publish("topic", 2323)
+	})
 }
