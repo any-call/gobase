@@ -81,6 +81,13 @@ func (client *Client) SubscribeOnce(topic string, fn interface{}, serverAddr, se
 
 // Start - starts the client service to listen to remote events
 func (client *Client) Start() error {
+	defer func() {
+		p := recover()
+		if p != nil {
+			fmt.Println("start panic", p)
+		}
+	}()
+
 	var err error
 	service := client.service
 	if !service.started {

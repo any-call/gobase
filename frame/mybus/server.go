@@ -101,6 +101,13 @@ func (server *Server) HasClientSubscribed(arg *SubscribeArg) bool {
 
 // Start - starts a service for remote clients to subscribe to events
 func (server *Server) Start() error {
+	defer func() {
+		p := recover()
+		if p != nil {
+			fmt.Println("start panic", p)
+		}
+	}()
+	
 	var err error
 	service := server.service
 	if !service.started {

@@ -45,6 +45,13 @@ type NetworkBusService struct {
 
 // Start - helper method to serve a network bus service
 func (networkBus *NetworkBus) Start() error {
+	defer func() {
+		p := recover()
+		if p != nil {
+			fmt.Println("start panic", p)
+		}
+	}()
+
 	var err error
 	service := networkBus.service
 	clientService := networkBus.Client.service

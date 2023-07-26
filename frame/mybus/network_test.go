@@ -62,16 +62,16 @@ func Test_network(t *testing.T) {
 	})
 
 	t.Run("newwork", func(t *testing.T) {
-		netBusA := NewNetworkBus(":2035", "/net_bus")
+		netBusA := NewNetworkBus(":2035", "/net_A_bus")
 		netBusA.Start()
 
-		netBusB := NewNetworkBus(":2036", "/net_bus")
+		netBusB := NewNetworkBus(":2036", "/net_B_bus")
 		netBusB.Start()
 
 		fnA := func(a int) {
 			fmt.Println("fnA ..", a)
 		}
-		netBusA.Subscribe("topic", fnA, ":2036", "/net_bus")
+		netBusA.Subscribe("topic", fnA, ":2036", "/net_B_bus")
 		netBusB.Bus().Publish("topic", 2323)
 	})
 }
