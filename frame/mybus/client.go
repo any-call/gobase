@@ -117,6 +117,7 @@ type ClientService struct {
 
 // PushEvent - exported service to listening to remote events
 func (service *ClientService) PushEvent(arg *ClientArg, reply *bool) error {
+	fmt.Println("received event", arg.Topic, arg.Args)
 	service.client.eventBus.Publish(arg.Topic, arg.Args...)
 	*reply = true
 	return nil

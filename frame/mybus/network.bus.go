@@ -53,7 +53,7 @@ func (networkBus *NetworkBus) Start() error {
 		server := rpc.NewServer()
 		server.RegisterName("ServerService", serverService)
 		server.RegisterName("ClientService", clientService)
-		server.HandleHTTP(networkBus.path, "/debug"+networkBus.path)
+		server.HandleHTTP(networkBus.path, "/"+networkBus.path)
 		l, e := net.Listen("tcp", networkBus.address)
 		if e != nil {
 			err = fmt.Errorf("listen error: %v", e)

@@ -1,6 +1,7 @@
 package mybus
 
 import (
+	"encoding/gob"
 	"errors"
 	"fmt"
 	"net"
@@ -62,6 +63,12 @@ func (server *Server) Bus() EventBus {
 	return server.eventBus
 }
 
+func (Server *Server) RegisterParamType(param any) {
+	if param != nil {
+		gob.Register(param)
+	}
+}
+
 func (server *Server) rpcCallback(subscribeArg *SubscribeArg) func(args ...interface{}) {
 	return func(args ...interface{}) {
 		client, connErr := rpc.DialHTTPPath("tcp", subscribeArg.ClientAddr, subscribeArg.ClientPath)
@@ -75,7 +82,7 @@ func (server *Server) rpcCallback(subscribeArg *SubscribeArg) func(args ...inter
 		var reply bool
 		err := client.Call(subscribeArg.ServiceMethod, clientArg, &reply)
 		if err != nil {
-			fmt.Errorf("dialing: %v", err)
+			fmt.Println("server dialing client err", clientArg.Args, err)
 		}
 	}
 }
@@ -140,8 +147,11 @@ func (service *ServerService) Register(arg *SubscribeArg, success *bool) error {
 		switch arg.SubscribeType {
 		case Subscribe:
 			service.server.eventBus.Subscribe(arg.Topic, rpcCallback)
+			break
+
 		case SubscribeOnce:
 			service.server.eventBus.SubscribeOnce(arg.Topic, rpcCallback)
+			break
 		}
 		var topicSubscribers []*SubscribeArg
 		if _, ok := subscribers[arg.Topic]; ok {
