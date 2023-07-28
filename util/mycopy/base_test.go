@@ -1,4 +1,4 @@
-package mydeepcopy
+package mycopy
 
 import "testing"
 
