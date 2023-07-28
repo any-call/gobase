@@ -5,6 +5,8 @@ import (
 	"reflect"
 )
 
+type BFun func() bool
+
 func Bool(value any) bool {
 	b, _ := myconv.ToBool(value)
 	return b
@@ -20,9 +22,11 @@ func Or[T, U any](a T, b U) bool {
 	return Bool(a) || Bool(b)
 }
 
-func If[T any](b bool, trueVal, falseVal T) T {
-	if b {
-		return trueVal
+func If[T any](f BFun, trueVal, falseVal T) T {
+	if f != nil {
+		if f() {
+			return trueVal
+		}
 	}
 	return falseVal
 }
