@@ -168,6 +168,5 @@ func (b *baseBind) trigger() {
 }
 
 func (b *baseBind) refValue(v reflect.Value) any {
-	//newV := mydeepcopy.Copy(v.Interface())
 	return fmt.Sprintf("%v", v.Interface())
 }
