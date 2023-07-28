@@ -124,13 +124,13 @@ func GetQuery(url string, param url.Values, timeout time.Duration, parseCb Parse
 	}, parseCb)
 }
 
-func PostForm(url string, req string, timeout time.Duration, parseCb ParseCallback) error {
+func PostForm(url string, values url.Values, timeout time.Duration, parseCb ParseCallback) error {
 	return DoReq(HttpMethodPost, url, func(r *http.Request) (isTls bool, tout time.Duration, err2 error) {
 		r.Header.Add("Content-Type", ContentTypeFormUrlencoded)
-		if len(req) > 0 {
-			b := []byte(req)
-			r.Body = io.NopCloser(bytes.NewBuffer(b))
-			r.Header.Add("Content-Length", strconv.Itoa(len(b)))
+		if values != nil {
+			tmpStr := values.Encode()
+			r.Body = io.NopCloser(strings.NewReader(tmpStr))
+			r.Header.Add("Content-Length", strconv.Itoa(len(tmpStr)))
 		}
 
 		tout = timeout
