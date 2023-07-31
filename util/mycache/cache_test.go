@@ -1,6 +1,10 @@
 package mycache
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+	"time"
+)
 
 type CacheTest struct {
 	ID   int
@@ -30,4 +34,24 @@ func Test_cache(t *testing.T) {
 	}
 
 	t.Log("test ok")
+}
+
+func Test_cache1(t *testing.T) {
+	c := NewCache()
+	c.Set("001", CacheTest{
+		ID:   1,
+		Name: "luis",
+	}, time.Second*5)
+
+	if obj, b := c.Get("001"); b {
+		fmt.Println(obj.(CacheTest).ID)
+		fmt.Println(obj.(CacheTest).Name)
+	} else {
+		t.Error("get no exist")
+	}
+
+	time.Sleep(time.Second * 5)
+
+	obj, b := c.Get("001")
+	t.Log("test ok:", obj, b)
 }
