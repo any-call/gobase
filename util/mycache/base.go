@@ -7,6 +7,7 @@ type Cache interface {
 	Set(k string, v any, d time.Duration) //设置值
 	HasKey(k string) bool
 	UpdateExpired(k string, d time.Duration) error //更新值 时效
+	UpdateValue(k string, v any) error
 	SaveFile(fname string) error
 	LoadFile(fname string) error
 	Flush()

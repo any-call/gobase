@@ -61,6 +61,17 @@ func (self *cache) UpdateExpired(k string, d time.Duration) error {
 	return nil
 }
 
+func (self *cache) UpdateValue(k string, v any) error {
+	itemV, b := self.items.Value(k)
+	if !b {
+		return fmt.Errorf("%s is not exist", k)
+	}
+
+	itemV.Object = v
+	self.items.Insert(k, itemV)
+	return nil
+}
+
 func (self *cache) Flush() {
 	keys, _ := self.items.ToArray()
 	for i, _ := range keys {
