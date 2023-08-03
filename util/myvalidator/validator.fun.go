@@ -72,9 +72,7 @@ func (v *ValidInfo) Valid() error {
 
 	case "date":
 		return date(v.val, v.param)
-
-	case "datetime":
-		return datetime(v.val, v.param)
+		
 	}
 
 	return nil
@@ -635,29 +633,13 @@ func date(val reflect.Value, param []string) error {
 		return nil
 	}
 
+	formatStr := param[0]
 	switch val.Kind() {
 	case reflect.String:
 		{
-			if ValidDate(val.String()) == false {
-				return errors.New(strings.Join(param, " "))
-			}
-		}
-		break
-	}
-
-	return nil
-}
-
-func datetime(val reflect.Value, param []string) error {
-	if param == nil && len(param) == 0 {
-		return nil
-	}
-
-	switch val.Kind() {
-	case reflect.String:
-		{
-			if ValidDateTime(val.String()) == false {
-				return errors.New(strings.Join(param, " "))
+			b := ValidDate(formatStr, val.String())
+			if !b {
+				return errors.New(strings.Join(param[1:], " "))
 			}
 		}
 		break
