@@ -6,11 +6,10 @@ import (
 )
 
 type User struct {
-	Name          string
-	Sex           bool
-	Age           int
-	OnAgeChanged  Signal[int]
-	OnNameChanged Signal[string]
+	Name         string
+	Sex          bool
+	Age          int
+	OnAgeChanged Signal
 }
 
 func (User *User) AddAge(a int) {
@@ -18,34 +17,32 @@ func (User *User) AddAge(a int) {
 	User.OnAgeChanged.Emit(User.Age)
 }
 
-func (User *User) SetName(a string) {
-	User.Name = a
-	User.OnNameChanged.Emit(User.Name)
-}
-
 func Test_Signal(t *testing.T) {
 	user := User{
-		Name: "luis",
-		Sex:  false,
-		Age:  0,
+		Name:         "luis",
+		Sex:          false,
+		Age:          0,
+		OnAgeChanged: NewSignal(),
 	}
 
-	Connect[int](&(user.OnAgeChanged), func(i int) error {
-		fmt.Println("received ageChanged1 :", i)
-		return nil
-	})
+	fn1 := func(age int) {
+		fmt.Println("fn1 is :", age)
+	}
 
-	Connect[int](&(user.OnAgeChanged), func(i int) error {
-		fmt.Println("received ageChanged2 :", i)
-		return nil
-	})
+	fn2 := func(age int) {
+		fmt.Println("fn2 is :", age)
+	}
 
-	Connect[string](&(user.OnNameChanged), func(name string) error {
-		fmt.Println("received nameChanged :", name)
-		return nil
-	})
+	if _, err := user.OnAgeChanged.Connect(fn1); err != nil {
+		t.Error(err)
+	}
+
+	if _, err := user.OnAgeChanged.Connect(fn2); err != nil {
+		t.Error(err)
+	}
 
 	user.AddAge(10)
 	user.AddAge(11)
-	user.SetName("luis")
+
+	t.Log("run over")
 }
