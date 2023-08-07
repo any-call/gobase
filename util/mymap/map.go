@@ -81,6 +81,17 @@ func (l *Map[K, V]) ToArray() (allKeys []K, allValues []V) {
 	return
 }
 
+func (l *Map[K, V]) ToMap() map[K]V {
+	l.lock.RLock()
+	defer l.lock.RUnlock()
+
+	ret := make(map[K]V)
+	for k, v := range l.mapList {
+		ret[k] = v
+	}
+	return ret
+}
+
 func (l *Map[K, V]) Keys() *mylist.List[K] {
 	l.lock.RLock()
 	defer l.lock.RUnlock()
