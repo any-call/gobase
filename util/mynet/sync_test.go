@@ -21,6 +21,9 @@ func Test_syncOP(t *testing.T) {
 			"001": 223,
 		}
 	}
+	fn4 := func() bool {
+		return false
+	}
 
 	ret := SyncOP(OPInfo{
 		Key:  "001",
@@ -34,6 +37,10 @@ func Test_syncOP(t *testing.T) {
 		Key:  "003",
 		Fn:   fn3,
 		Args: []any{"1121"},
+	}, OPInfo{
+		Key:  "004",
+		Fn:   fn4,
+		Args: nil,
 	})
 	t.Log("run ok...", ret)
 }
