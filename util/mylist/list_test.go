@@ -5,7 +5,7 @@ import (
 )
 
 func TestList(t *testing.T) {
-	list := New[string]()
+	list := NewList[string]()
 	list.Append("jin gui hua ")
 	list.Insert(0, "luis")
 	list.Insert(1, "is")
@@ -20,7 +20,7 @@ func TestList(t *testing.T) {
 	list.Range(func(index int, v string) {
 		t.Log("index", index, " value:", v)
 	})
-	
+
 	t.Log("list :", list)
 	//var err error
 	//var v string
