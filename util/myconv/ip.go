@@ -6,11 +6,20 @@ import (
 	"fmt"
 	"net"
 	"strconv"
+	"strings"
 )
 
 func IPV42Long(ip string) uint32 {
 	var long uint32
-	binary.Read(bytes.NewBuffer(net.ParseIP(ip).To4()), binary.BigEndian, &long)
+	parts := strings.Split(ip, ".")
+	for i := range parts {
+		parts[i] = strings.TrimLeft(parts[i], "0")
+		if parts[i] == "" {
+			parts[i] = "0"
+		}
+	}
+	newIP := strings.Join(parts, ".")
+	binary.Read(bytes.NewBuffer(net.ParseIP(newIP).To4()), binary.BigEndian, &long)
 	return long
 }
 
