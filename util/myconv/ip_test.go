@@ -29,5 +29,5 @@ func TestIPV42Long(t *testing.T) {
 }
 
 func Test_long(t *testing.T) {
-	t.Log("001.248.165.0 to long:", IPV42Long("001.248.165.0"))
+	t.Log("001.208.165.0 to long:", IPV42Long("001.208.165.0"))
 }
