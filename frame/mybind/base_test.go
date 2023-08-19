@@ -38,7 +38,7 @@ func Test_bind(t *testing.T) {
 		var i int
 		for {
 			i += 5
-			SetData(func() {
+			SetState(func() {
 				monitorObj["name"] = i
 			})
 

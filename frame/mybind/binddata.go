@@ -114,7 +114,7 @@ func (b *baseBind) RemoteListener(listener Listener) error {
 	return err
 }
 
-func (b *baseBind) SetData(fn func()) {
+func (b *baseBind) SetState(fn func()) {
 	if fn != nil {
 		defer b.trigger()
 		fn()
