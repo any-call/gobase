@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -28,7 +29,27 @@ type (
 	ParseCallback func(ret []byte, httpCode int) error
 )
 
-func DoReq(method string, url string, reqCB ReqCallback, parseCB ParseCallback) (err error) {
+func NewLongClient() *http.Client {
+	return &http.Client{
+		Timeout: 10 * time.Second,
+		Transport: &http.Transport{
+			TLSClientConfig:   &tls.Config{InsecureSkipVerify: true},
+			DisableKeepAlives: true,
+			Proxy:             http.ProxyFromEnvironment,
+			DialContext: (&net.Dialer{
+				Timeout:   30 * time.Second, // tcp连接超时时间
+				KeepAlive: 60 * time.Second, // 保持长连接的时间
+			}).DialContext, // 设置连接的参数
+			MaxIdleConns:          100,              // 最大空闲连接
+			MaxConnsPerHost:       100,              //每个host保持的空闲连接数
+			MaxIdleConnsPerHost:   100,              // 每个host保持的空闲连接数
+			ExpectContinueTimeout: 30 * time.Second, // 等待服务第一响应的超时时间
+			IdleConnTimeout:       60 * time.Second, // 空闲连接的超时时间
+		},
+	}
+}
+
+func DoReq(method string, url string, reqCB ReqCallback, parseCB ParseCallback, client *http.Client) (err error) {
 	r, err := http.NewRequest(method, url, nil)
 	if err != nil {
 		return err
@@ -43,14 +64,23 @@ func DoReq(method string, url string, reqCB ReqCallback, parseCB ParseCallback) 
 		}
 	}
 
-	client := &http.Client{
-		Timeout: timeout,
-	}
+	if client == nil {
+		client = &http.Client{
+			Timeout: timeout,
+		}
 
-	if isTLS {
-		defaultTransPort := http.DefaultTransport
-		defaultTransPort.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-		client.Transport = defaultTransPort
+		if isTLS {
+			defaultTransPort := http.DefaultTransport
+			defaultTransPort.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+			client.Transport = defaultTransPort
+		}
+	} else {
+		client.Timeout = timeout
+		if isTLS {
+			if _, ok := client.Transport.(*http.Transport); ok {
+				client.Transport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+			}
+		}
 	}
 
 	var resp *http.Response = nil
@@ -72,7 +102,7 @@ func DoReq(method string, url string, reqCB ReqCallback, parseCB ParseCallback) 
 	return nil
 }
 
-func GetJson(url string, inParam any, timeout time.Duration, parseCb ParseCallback) (err error) {
+func GetJson(url string, inParam any, timeout time.Duration, parseCb ParseCallback, client *http.Client) (err error) {
 	return DoReq(HttpMethodGet, url, func(r *http.Request) (isTls bool, tout time.Duration, err2 error) {
 		r.Header.Add("Content-Type", ContentTypeJson)
 		if inParam != nil {
@@ -89,10 +119,10 @@ func GetJson(url string, inParam any, timeout time.Duration, parseCb ParseCallba
 			isTls = true
 		}
 		return isTls, tout, nil
-	}, parseCb)
+	}, parseCb, client)
 }
 
-func PostJson(url string, inParam any, timeout time.Duration, parseCb ParseCallback) (err error) {
+func PostJson(url string, inParam any, timeout time.Duration, parseCb ParseCallback, client *http.Client) (err error) {
 	return DoReq(HttpMethodPost, url, func(r *http.Request) (isTls bool, tout time.Duration, err2 error) {
 		r.Header.Add("Content-Type", ContentTypeJson)
 		if inParam != nil {
@@ -109,10 +139,10 @@ func PostJson(url string, inParam any, timeout time.Duration, parseCb ParseCallb
 			isTls = true
 		}
 		return isTls, tout, nil
-	}, parseCb)
+	}, parseCb, client)
 }
 
-func GetQuery(url string, param url.Values, timeout time.Duration, parseCb ParseCallback) error {
+func GetQuery(url string, param url.Values, timeout time.Duration, parseCb ParseCallback, client *http.Client) error {
 	newUrl := fmt.Sprintf("%s?%s", url, param.Encode())
 	return DoReq(HttpMethodGet, newUrl, func(r *http.Request) (isTls bool, tout time.Duration, err error) {
 		r.Header.Add("Content-Type", ContentTypeFormUrlencoded)
@@ -121,10 +151,10 @@ func GetQuery(url string, param url.Values, timeout time.Duration, parseCb Parse
 			isTls = true
 		}
 		return isTls, tout, nil
-	}, parseCb)
+	}, parseCb, client)
 }
 
-func PostForm(url string, values url.Values, timeout time.Duration, parseCb ParseCallback) error {
+func PostForm(url string, values url.Values, timeout time.Duration, parseCb ParseCallback, client *http.Client) error {
 	return DoReq(HttpMethodPost, url, func(r *http.Request) (isTls bool, tout time.Duration, err2 error) {
 		r.Header.Add("Content-Type", ContentTypeFormUrlencoded)
 		if values != nil {
@@ -138,5 +168,5 @@ func PostForm(url string, values url.Values, timeout time.Duration, parseCb Pars
 			isTls = true
 		}
 		return isTls, tout, nil
-	}, parseCb)
+	}, parseCb, client)
 }

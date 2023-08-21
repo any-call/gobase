@@ -31,7 +31,7 @@ func BenchmarkGetJson(t *testing.B) {
 		}
 
 		return nil
-	})
+	}, nil)
 
 	if err != nil {
 		t.Error(err)
