@@ -22,12 +22,6 @@ func TestList(t *testing.T) {
 	})
 
 	t.Log("list :", list)
-	//var err error
-	//var v string
-	//for err == nil {
-	//	if v, err = list.TakeAt(0); err == nil {
-	//		t.Log("v:", v)
-	//	}
-	//
-	//}
+	list.ResetByArray([]string{"china", " chinese "})
+	t.Log("list1 :", list)
 }
