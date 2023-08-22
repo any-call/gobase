@@ -19,6 +19,20 @@ func (l *Map[K, V]) init() *Map[K, V] {
 	return l
 }
 
+func (l *Map[K, V]) ResetByMap(items map[K]V) {
+	l.lock.Lock()
+	defer l.lock.Unlock()
+
+	l.mapList = make(map[K]V, 100)
+	if items != nil {
+		for k, v := range items {
+			l.mapList[k] = v
+		}
+	}
+
+	return
+}
+
 func (l *Map[K, V]) Insert(k K, v V) {
 	l.lock.Lock()
 	defer l.lock.Unlock()
