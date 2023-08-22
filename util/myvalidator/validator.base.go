@@ -27,7 +27,7 @@ func Validate(obj any) error {
 }
 
 func check(myType reflect.Type, myValue reflect.Value) error {
-	fmt.Printf("enter check type:%v,value:%v\n", myType.Name(), myValue)
+	//fmt.Printf("enter check type:%v,value:%v\n", myType.Name(), myValue)
 	//针对指针类 ，转换成 实体
 	if myType.Kind() == reflect.Pointer {
 		if myValue.IsNil() == false {
