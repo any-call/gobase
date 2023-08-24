@@ -25,7 +25,8 @@ func Test_syncOP(t *testing.T) {
 		return false
 	}
 
-	ret := SyncOP(OPInfo{
+	list := make([]OPInfo, 0)
+	list = append(list, OPInfo{
 		Key:  "001",
 		Fn:   fn1,
 		Args: []any{"1121"},
@@ -42,5 +43,9 @@ func Test_syncOP(t *testing.T) {
 		Fn:   fn4,
 		Args: nil,
 	})
+
+	ret := SyncOP(list...)
 	t.Log("run ok...", ret)
+	ret = SyncOPByNum(1, list...)
+	t.Log("run ok 11...", ret)
 }

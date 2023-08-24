@@ -98,3 +98,37 @@ func SyncOP(listOP ...OPInfo) map[string]any {
 	wg.Wait()
 	return ret.ToMap()
 }
+
+func SyncOPByNum(goNum uint, listOP ...OPInfo) map[string]any {
+	if goNum == 0 {
+		goNum = 1
+	}
+	limiter := make(chan struct{}, goNum)
+
+	wg := sync.WaitGroup{}
+	wg.Add(len(listOP))
+
+	ret := mymap.NewMap[string, any]()
+	for i, _ := range listOP {
+		limiter <- struct{}{}
+		go func(op OPInfo) {
+			defer func() {
+				<-limiter
+				wg.Done()
+				if p := recover(); p != nil {
+					ret.Insert(op.Key, p)
+				}
+			}()
+
+			if err := op.Check(); err != nil {
+				ret.Insert(op.Key, err)
+			} else {
+				ret.Insert(op.Key, op.Exec())
+			}
+
+		}(listOP[i])
+	}
+
+	wg.Wait()
+	return ret.ToMap()
+}

@@ -31,20 +31,19 @@ type (
 
 func NewLongClient() *http.Client {
 	return &http.Client{
-		Timeout: 10 * time.Second,
+		Timeout: 30 * time.Second,
 		Transport: &http.Transport{
-			TLSClientConfig:   &tls.Config{InsecureSkipVerify: true},
-			DisableKeepAlives: true,
-			Proxy:             http.ProxyFromEnvironment,
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 			DialContext: (&net.Dialer{
 				Timeout:   30 * time.Second, // tcp连接超时时间
 				KeepAlive: 60 * time.Second, // 保持长连接的时间
 			}).DialContext, // 设置连接的参数
+			ForceAttemptHTTP2:     true,
 			MaxIdleConns:          100,              // 最大空闲连接
-			MaxConnsPerHost:       100,              //每个host保持的空闲连接数
+			MaxConnsPerHost:       1000,             //每个host保持的空闲连接数
 			MaxIdleConnsPerHost:   100,              // 每个host保持的空闲连接数
 			ExpectContinueTimeout: 30 * time.Second, // 等待服务第一响应的超时时间
-			IdleConnTimeout:       60 * time.Second, // 空闲连接的超时时间
+			IdleConnTimeout:       90 * time.Second, // 空闲连接的超时时间
 		},
 	}
 }
