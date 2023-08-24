@@ -1,4 +1,4 @@
-package myconctrl
+package myctrl
 
 import (
 	"sync"
@@ -24,6 +24,7 @@ func (self *goLimiter) Begin() {
 		if self.Number() < self.goNum {
 			self.Lock()
 			defer self.Unlock()
+
 			self.limiter <- struct{}{}
 			return
 		}

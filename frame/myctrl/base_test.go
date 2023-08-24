@@ -1,4 +1,4 @@
-package myconctrl
+package myctrl
 
 import (
 	"fmt"
@@ -15,7 +15,7 @@ func TestGoLimiter_Begin(t *testing.T) {
 			limiter.Begin()
 			fmt.Println("i = ", i)
 			i++
-			time.Sleep(time.Millisecond * 10)
+			time.Sleep(time.Millisecond * 100)
 			limiter.End()
 		}
 		t.Log("i over")
@@ -27,7 +27,7 @@ func TestGoLimiter_Begin(t *testing.T) {
 			limiter.Begin()
 			fmt.Println("m = ", m)
 			m++
-			time.Sleep(time.Second)
+			time.Sleep(time.Millisecond * 95)
 			limiter.End()
 		}
 		t.Log("m over")

@@ -1,4 +1,4 @@
-package myconctrl
+package myctrl
 
 type (
 	Golimiter interface {
