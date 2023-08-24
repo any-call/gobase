@@ -2,7 +2,6 @@ package myctrl
 
 import (
 	"sync"
-	"time"
 )
 
 type goLimiter struct {
@@ -20,23 +19,17 @@ func NewGolimiter(goNum int) Golimiter {
 }
 
 func (self *goLimiter) Begin() {
-	for {
-		if self.Number() < self.goNum {
-			self.Lock()
-			defer self.Unlock()
-
-			self.limiter <- struct{}{}
-			return
-		}
-		time.Sleep(time.Millisecond)
-	}
+	self.limiter <- struct{}{}
+	return
 }
 
 func (self *goLimiter) End() {
 	self.Lock()
 	defer self.Unlock()
 
-	if len(self.limiter) > 0 {
+	//if len(self.limiter) > 0
+	{
+
 		<-self.limiter
 	}
 }

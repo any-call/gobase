@@ -7,7 +7,7 @@ import (
 )
 
 func TestGoLimiter_Begin(t *testing.T) {
-	limiter := NewGolimiter(10)
+	limiter := NewGolimiter(1)
 
 	go func() {
 		var i int
@@ -16,7 +16,6 @@ func TestGoLimiter_Begin(t *testing.T) {
 			fmt.Println("i = ", i)
 			i++
 			time.Sleep(time.Millisecond * 100)
-			limiter.End()
 		}
 		t.Log("i over")
 	}()
@@ -24,10 +23,9 @@ func TestGoLimiter_Begin(t *testing.T) {
 	go func() {
 		var m int
 		for m < 100 {
-			limiter.Begin()
 			fmt.Println("m = ", m)
 			m++
-			time.Sleep(time.Millisecond * 95)
+			time.Sleep(time.Millisecond * 10)
 			limiter.End()
 		}
 		t.Log("m over")
