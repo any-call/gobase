@@ -34,3 +34,16 @@ func TestGoLimiter_Begin(t *testing.T) {
 	time.Sleep(time.Second * 130)
 	t.Log("begin over")
 }
+
+func Test_Delay(t *testing.T) {
+	fn := func(n int) {
+		fmt.Println("enter : ", n)
+	}
+
+	var m int = 100
+	DelayExec(time.Second*5, func() {
+		fn(m)
+	})
+
+	time.Sleep(time.Second * 10)
+}
