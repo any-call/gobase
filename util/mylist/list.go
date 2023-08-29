@@ -246,6 +246,20 @@ func (l *List[E]) TakeAt(idx int) (v E, err error) {
 	return
 }
 
+func (l *List[E]) TakeAll() []E {
+	l.lock.Lock()
+	defer l.lock.Unlock()
+
+	ret := make([]E, len(l.list))
+
+	for i, _ := range l.list {
+		ret[i] = l.list[i].value
+	}
+
+	l.init()
+	return ret
+}
+
 func (l *List[E]) Range(f func(index int, v E)) {
 	l.lock.RLock()
 	defer l.lock.RUnlock()
