@@ -47,3 +47,17 @@ func Test_Delay(t *testing.T) {
 
 	time.Sleep(time.Second * 10)
 }
+
+func Test_TimeExec(t *testing.T) {
+	fn := func(n int) {
+		fmt.Println("enter : ", n, time.Now().Second())
+		time.Sleep(time.Second * 2)
+	}
+
+	var m int = 100
+	go TimerExec(time.Second, func() {
+		go fn(m)
+	})
+
+	time.Sleep(time.Minute)
+}

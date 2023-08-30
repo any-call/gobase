@@ -22,3 +22,18 @@ func DelayExec(t time.Duration, fn func()) {
 		}(timer)
 	}
 }
+
+func TimerExec(t time.Duration, fn func()) {
+	if fn != nil {
+		timer := time.NewTimer(t)
+
+		for {
+			select {
+			case <-timer.C:
+				timer.Reset(t)
+				fn()
+				break
+			}
+		}
+	}
+}
