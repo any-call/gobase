@@ -29,6 +29,20 @@ func (l *List[E]) Append(item E) {
 	l.list = append(l.list, newNode[E](item))
 }
 
+func (l *List[E]) AppendByArray(items []E) {
+	l.lock.Lock()
+	defer l.lock.Unlock()
+
+	if items != nil {
+		nodes := make([]*node[E], len(items))
+		for i, _ := range items {
+			nodes[i] = newNode(items[i])
+		}
+
+		l.list = append(l.list, nodes...)
+	}
+}
+
 func (l *List[E]) ResetByArray(items []E) {
 	l.lock.Lock()
 	defer l.lock.Unlock()

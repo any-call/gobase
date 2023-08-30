@@ -24,4 +24,7 @@ func TestList(t *testing.T) {
 	t.Log("list :", list)
 	list.ResetByArray([]string{"china", " chinese "})
 	t.Log("list1 :", list)
+
+	list.AppendByArray([]string{"luis", "very", "good"})
+	t.Log("list2 :", list)
 }
