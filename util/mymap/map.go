@@ -49,6 +49,19 @@ func (l *Map[K, V]) Remove(k K) {
 	return
 }
 
+func (l *Map[K, V]) RemoveKeys(listK []K) {
+	l.lock.Lock()
+	defer l.lock.Unlock()
+
+	if listK != nil {
+		for i, _ := range listK {
+			delete(l.mapList, listK[i])
+		}
+	}
+
+	return
+}
+
 func (l *Map[K, V]) TakeAt(k K) (v V, b bool) {
 	l.lock.Lock()
 	defer l.lock.Unlock()
