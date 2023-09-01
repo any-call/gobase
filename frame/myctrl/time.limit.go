@@ -2,6 +2,7 @@ package myctrl
 
 import (
 	"github.com/any-call/gobase/util/mycache"
+	"github.com/any-call/gobase/util/mylog"
 	"sync/atomic"
 	"time"
 )
@@ -34,7 +35,7 @@ func (self *goTimeLimiter) Begin() {
 	self.limiter <- struct{}{}
 	if v, b := self.cacheTime.Get(timeDuration); b {
 		if intV, ok := v.(int32); ok {
-			if intV > self.maxNum {
+			if intV >= self.maxNum {
 				//等待
 				<-self.limiter
 				time.Sleep(time.Millisecond * 5)
@@ -42,10 +43,12 @@ func (self *goTimeLimiter) Begin() {
 			} else {
 				self.cacheTime.UpdateValue(timeDuration, atomic.AddInt32(&self.unitNum, 1))
 			}
+		} else {
+			mylog.Debug("will send not int32:", v)
 		}
 	} else {
 		atomic.StoreInt32(&self.unitNum, 1)
-		self.cacheTime.Set(timeDuration, 1, self.t)
+		self.cacheTime.Set(timeDuration, int32(1), self.t)
 	}
 
 	return
