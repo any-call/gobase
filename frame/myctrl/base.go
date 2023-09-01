@@ -10,6 +10,12 @@ type (
 		End()
 		Number() int32
 	}
+
+	GoTimelimiter interface {
+		Begin()
+		End()
+		Number() int32
+	}
 )
 
 func DelayExec(t time.Duration, fn func()) {

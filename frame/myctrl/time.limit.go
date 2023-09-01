@@ -13,12 +13,12 @@ const (
 type goTimeLimiter struct {
 	limiter   chan struct{}
 	maxNum    int32
-	runNum    int32
+	unitNum   int32
 	t         time.Duration
 	cacheTime mycache.Cache
 }
 
-func NewGoTimeLimiter(goNum int, t time.Duration) *goTimeLimiter {
+func NewGoTimeLimiter(goNum int, t time.Duration) GoTimelimiter {
 	if goNum <= 0 {
 		goNum = 1
 	}
@@ -35,12 +35,17 @@ func (self *goTimeLimiter) Begin() {
 	if v, b := self.cacheTime.Get(timeDuration); b {
 		if intV, ok := v.(int32); ok {
 			if intV > self.maxNum {
+				//等待
+				<-self.limiter
+				time.Sleep(time.Millisecond * 5)
+				self.Begin()
+			} else {
+				self.cacheTime.UpdateValue(timeDuration, atomic.AddInt32(&self.unitNum, 1))
 			}
 		}
-		self.cacheTime.UpdateValue(timeDuration, atomic.AddInt32(&self.runNum, 1))
 	} else {
-		atomic.StoreInt32(&self.runNum, 1)
-		self.cacheTime.Set(timeDuration, self.runNum, self.t)
+		atomic.StoreInt32(&self.unitNum, 1)
+		self.cacheTime.Set(timeDuration, 1, self.t)
 	}
 
 	return
@@ -48,15 +53,15 @@ func (self *goTimeLimiter) Begin() {
 
 func (self *goTimeLimiter) End() {
 	<-self.limiter
-	if b := self.cacheTime.HasKey(timeDuration); b {
-		self.cacheTime.UpdateValue(timeDuration, atomic.AddInt32(&self.runNum, -1))
-	} else {
-		self.cacheTime.Set(timeDuration, atomic.AddInt32(&self.runNum, -1), self.t)
-	}
-
 	return
 }
 
 func (self *goTimeLimiter) Number() int32 {
-	return atomic.LoadInt32(&self.runNum)
+	if num, ok := self.cacheTime.Get(timeDuration); ok {
+		if int32V, ok := num.(int32); ok {
+			return int32V
+		}
+	}
+
+	return 0
 }
