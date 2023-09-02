@@ -2,7 +2,7 @@ package myctrl
 
 import (
 	"github.com/any-call/gobase/util/mycache"
-	"github.com/any-call/gobase/util/mylog"
+	"sync"
 	"sync/atomic"
 	"time"
 )
@@ -12,9 +12,10 @@ const (
 )
 
 type goTimeLimiter struct {
+	sync.Mutex
 	limiter   chan struct{}
 	maxNum    int32
-	unitNum   int32
+	unitNum   *atomic.Int32
 	t         time.Duration
 	cacheTime mycache.Cache
 }
@@ -28,27 +29,35 @@ func NewGoTimeLimiter(goNum int, t time.Duration) GoTimelimiter {
 		t = time.Second
 	}
 
-	return &goTimeLimiter{limiter: make(chan struct{}, goNum), maxNum: int32(goNum), t: t, cacheTime: mycache.NewCache()}
+	return &goTimeLimiter{
+		limiter:   make(chan struct{}, goNum),
+		maxNum:    int32(goNum),
+		unitNum:   &atomic.Int32{},
+		t:         t,
+		cacheTime: mycache.NewCache()}
 }
 
 func (self *goTimeLimiter) Begin() {
 	self.limiter <- struct{}{}
+
 	if v, b := self.cacheTime.Get(timeDuration); b {
 		if intV, ok := v.(int32); ok {
 			if intV >= self.maxNum {
-				//等待
 				<-self.limiter
 				time.Sleep(time.Millisecond * 5)
 				self.Begin()
 			} else {
-				self.cacheTime.UpdateValue(timeDuration, atomic.AddInt32(&self.unitNum, 1))
+				self.Lock()
+				defer self.Unlock()
+				if err := self.cacheTime.UpdateValue(timeDuration, self.unitNum.Add(1)); err != nil {
+					self.unitNum.Store(1)
+					self.cacheTime.Set(timeDuration, self.unitNum.Load(), self.t)
+				}
 			}
-		} else {
-			mylog.Debug("will send not int32:", v)
 		}
 	} else {
-		atomic.StoreInt32(&self.unitNum, 1)
-		self.cacheTime.Set(timeDuration, int32(1), self.t)
+		self.unitNum.Store(1)
+		self.cacheTime.Set(timeDuration, self.unitNum.Load(), self.t)
 	}
 
 	return
