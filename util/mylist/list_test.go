@@ -27,4 +27,7 @@ func TestList(t *testing.T) {
 
 	list.AppendByArray([]string{"luis", "very", "good"})
 	t.Log("list2 :", list)
+
+	aa := list.TakeHeadN(20)
+	t.Log("list3 :", list, ",aa", aa)
 }

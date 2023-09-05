@@ -274,6 +274,29 @@ func (l *List[E]) TakeAll() []E {
 	return ret
 }
 
+func (l *List[E]) TakeHeadN(count int) []E {
+	l.lock.Lock()
+	defer l.lock.Unlock()
+
+	if count <= 0 {
+		return []E{}
+	}
+
+	if count > len(l.list) {
+		count = len(l.list)
+	}
+
+	ret := make([]E, count)
+
+	for i := 0; i < count; i++ {
+		ret[i] = l.list[i].value
+	}
+
+	l.list = l.list[count:]
+
+	return ret
+}
+
 func (l *List[E]) Range(f func(index int, v E)) {
 	l.lock.RLock()
 	defer l.lock.RUnlock()
