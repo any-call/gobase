@@ -22,6 +22,21 @@ func LookupNS(domain string) (ns []string, err error) {
 	return
 }
 
+func LookupNSEx(domain string, timeout time.Duration) (ns []string, err error) {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	if nameServer, err := net.DefaultResolver.LookupNS(ctx, domain); err != nil {
+		return nil, err
+	} else {
+		ns = make([]string, len(nameServer))
+		for i, v := range nameServer {
+			ns[i] = strings.TrimSuffix(v.Host, ".")
+		}
+	}
+	return
+}
+
 func LookupIP(domain string) (ipRec []net.IP, err error) {
 	if iprecords, err := net.LookupIP(domain); err != nil {
 		return nil, err
@@ -31,6 +46,22 @@ func LookupIP(domain string) (ipRec []net.IP, err error) {
 			ipRec[i] = v
 		}
 	}
+	return
+}
+
+func LookupIPEx(domain string, timeout time.Duration) (ipRec []net.IP, err error) {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	if iprecords, err := net.DefaultResolver.LookupIPAddr(ctx, domain); err != nil {
+		return nil, err
+	} else {
+		ipRec = make([]net.IP, len(iprecords))
+		for i, ia := range iprecords {
+			ipRec[i] = ia.IP
+		}
+	}
+
 	return
 }
 
@@ -52,12 +83,41 @@ func LookupAddr(addr string) (domains []string, err error) {
 	return
 }
 
+func LookupAddrEx(addr string, timeout time.Duration) (domains []string, err error) {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	if nameServer, err := net.DefaultResolver.LookupAddr(ctx, addr); err != nil {
+		return nil, err
+	} else {
+		domains = make([]string, len(nameServer))
+		for i, v := range nameServer {
+			domains[i] = v
+		}
+	}
+	return
+}
+
 func LookupCName(domain string) (cname string, err error) {
 	return net.LookupCNAME(domain)
 }
 
+func LookupCNameEx(domain string, timeout time.Duration) (cname string, err error) {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	return net.DefaultResolver.LookupCNAME(ctx, domain)
+}
+
 func LookupTXT(domain string) (txt []string, err error) {
 	return net.LookupTXT(domain)
+}
+
+func LookupTXTEx(domain string, timeout time.Duration) (txt []string, err error) {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	return net.DefaultResolver.LookupTXT(ctx, domain)
 }
 
 func DigNS(domain string, timeout time.Duration) (nss []string) {

@@ -2,7 +2,6 @@ package mynet
 
 import (
 	"fmt"
-	"net"
 	"net/http"
 	"testing"
 	"time"
@@ -14,14 +13,12 @@ func Test_DigNS(t *testing.T) {
 }
 
 func Test_TT(t *testing.T) {
-	dns := "110.242.68.66"
-	ns, err := net.LookupAddr(dns)
-	if err != nil {
+	if ns, err := LookupNSEx("baidu.com", time.Millisecond*100); err != nil {
 		t.Error(err)
 		return
+	} else {
+		t.Log("ns is :", ns)
 	}
-
-	t.Log("ns:", ns)
 }
 
 func Test_other(t *testing.T) {
