@@ -19,6 +19,35 @@ func Test_TT(t *testing.T) {
 	} else {
 		t.Log("ns is :", ns)
 	}
+
+	//if ns, err := LookupAddrEx("39.156.66.10", time.Millisecond*1000); err != nil {
+	//	t.Error(err)
+	//	return
+	//} else {
+	//	t.Log("addr is :", ns)
+	//}
+
+	if ns, err := LookupIPEx("baidu.com", time.Millisecond*100); err != nil {
+		t.Error(err)
+		return
+	} else {
+		t.Log("baidu.com ip is :", ns)
+	}
+
+	if ns, err := LookupTXTEx("baidu.com", time.Millisecond*100); err != nil {
+		t.Error(err)
+		return
+	} else {
+		t.Log("txt is :", ns)
+	}
+
+	if ns, err := LookupCNameEx("baidu.com", time.Millisecond*100); err != nil {
+		t.Error(err)
+		return
+	} else {
+		t.Log("cname is :", ns)
+	}
+
 }
 
 func Test_other(t *testing.T) {
