@@ -8,17 +8,23 @@ import (
 )
 
 type List[E any] struct {
-	lock sync.RWMutex
-	list []*node[E]
+	lock        sync.RWMutex
+	list        []*node[E]
+	capacityNum int32
 }
 
 func NewList[E any]() *List[E] {
-	return new(List[E]).init()
+	return new(List[E]).init(500)
+}
+
+func NewListEx[E any](capacityNum int32) *List[E] {
+	return new(List[E]).init(capacityNum)
 }
 
 // 返回一个空数组
-func (l *List[E]) init() *List[E] {
-	l.list = make([]*node[E], 0, 500)
+func (l *List[E]) init(num int32) *List[E] {
+	l.list = make([]*node[E], 0, num)
+	l.capacityNum = num
 	return l
 }
 
@@ -116,7 +122,7 @@ func (l *List[E]) Clear() {
 	l.lock.Lock()
 	defer l.lock.Unlock()
 
-	l.init()
+	l.init(l.capacityNum)
 
 	return
 }
@@ -270,7 +276,7 @@ func (l *List[E]) TakeAll() []E {
 		ret[i] = l.list[i].value
 	}
 
-	l.init()
+	l.init(l.capacityNum)
 	return ret
 }
 

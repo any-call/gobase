@@ -5,7 +5,7 @@ import (
 )
 
 func TestList(t *testing.T) {
-	list := NewList[string]()
+	list := NewListEx[string](10000)
 	list.Append("jin gui hua ")
 	list.Insert(0, "luis")
 	list.Insert(1, "is")
