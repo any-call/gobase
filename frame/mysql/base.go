@@ -2,6 +2,8 @@ package mysql
 
 import (
 	"fmt"
+	"github.com/any-call/gobase/util/myconv"
+	"reflect"
 	"regexp"
 )
 
@@ -44,13 +46,28 @@ func prepare(sql string, args ...any) string {
 	var index int = 0
 	return rep.ReplaceAllStringFunc(sql, func(s string) string {
 		if index < len(args) {
-			switch args[index] {
-			}
-
+			tmpIndex := index
 			index++
 
+			directObj := myconv.DirectObj(args[tmpIndex])
+			switch reflect.ValueOf(directObj).Kind() {
+			case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+				return fmt.Sprintf("%d", directObj)
+
+			case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+				return fmt.Sprintf("%ud", directObj)
+
+			case reflect.Float32, reflect.Float64:
+				return fmt.Sprintf("%f", directObj)
+
+			case reflect.String:
+				return fmt.Sprintf("'%s'", directObj)
+			default:
+				return fmt.Sprintf("%v", directObj)
+			}
 		}
-		fmt.Println("in string", s)
+
+		//fmt.Println("in string", s)
 		return s
 	})
 }

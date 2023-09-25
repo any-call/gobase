@@ -12,7 +12,7 @@ type selectBuilder struct {
 	from   string
 	fields []string
 	joins  string
-	where  string
+	where  []string
 	group  string
 	order  string
 	limit  int
@@ -34,7 +34,7 @@ func (self *selectBuilder) Select(column ...string) SelectBuilder {
 }
 
 func (self *selectBuilder) Joins(query string, args ...any) SelectBuilder {
-	self.joins = query + fmt.Sprint(args...)
+	self.joins = prepare(query, args...)
 	return self
 }
 
@@ -43,7 +43,15 @@ func (self *selectBuilder) InnerJoins(query string, args ...any) SelectBuilder {
 }
 
 func (self *selectBuilder) Where(query string, args ...any) SelectBuilder {
-	self.where = query + fmt.Sprint(args...)
+	currWhere := prepare(query, args...)
+	if currWhere != "" {
+		if self.where == nil {
+			self.where = []string{currWhere}
+		} else {
+			self.where = append(self.where, currWhere)
+		}
+	}
+
 	return self
 }
 
@@ -75,8 +83,8 @@ func (self *selectBuilder) ToSql() string {
 		baseSQL += " " + self.joins
 	}
 
-	if self.where != "" {
-		baseSQL += " where " + self.where
+	if self.where != nil && len(self.where) > 0 {
+		baseSQL += " where " + strings.Join(self.where, " and ")
 	}
 
 	if self.order != "" {
