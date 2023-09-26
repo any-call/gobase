@@ -35,3 +35,13 @@ func TestUpdateBuilder(t *testing.T) {
 	t.Log("tmpSql :", tmpSql)
 
 }
+
+func TestInsertBuilder(t *testing.T) {
+	insertSql := NewInsertSQL()
+	tmpSql := insertSql.Table("task_manager_alert").Columns("task_id", "type_id", "uuid").
+		AppendValues(1, 1, "test1").AppendValues(2, 3, "test", "app").
+		ToSql()
+
+	t.Log("tmpSql :", tmpSql)
+
+}

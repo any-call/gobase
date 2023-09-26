@@ -31,10 +31,8 @@ type (
 
 	InsertBuilder interface {
 		Table(name string) InsertBuilder
-		Where(query string, args ...any) UpdateBuilder
-		Or(query string, args ...any) UpdateBuilder
 		Columns(col ...string) InsertBuilder
-		Values(v ...[]any) InsertBuilder
+		AppendValues(v ...any) InsertBuilder
 		ToSql() string
 	}
 )
