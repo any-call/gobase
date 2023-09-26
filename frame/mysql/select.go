@@ -1,14 +1,12 @@
 package mysql
 
 import (
-	"database/sql"
 	"fmt"
 	"github.com/any-call/gobase/util/mycond"
 	"strings"
 )
 
 type selectBuilder struct {
-	sql.DB
 	from     string
 	fields   []string
 	joins    string

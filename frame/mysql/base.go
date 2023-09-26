@@ -23,16 +23,16 @@ type (
 
 	UpdateBuilder interface {
 		Table(name string) UpdateBuilder
-		And(query string, args ...any) SelectBuilder
-		Or(query string, args ...any) SelectBuilder
+		Where(query string, args ...any) UpdateBuilder
+		Or(query string, args ...any) UpdateBuilder
 		Update(column string, v any) UpdateBuilder
 		ToSql() string
 	}
 
 	InsertBuilder interface {
 		Table(name string) InsertBuilder
-		And(query string, args ...any) SelectBuilder
-		Or(query string, args ...any) SelectBuilder
+		Where(query string, args ...any) UpdateBuilder
+		Or(query string, args ...any) UpdateBuilder
 		Columns(col ...string) InsertBuilder
 		Values(v ...[]any) InsertBuilder
 		ToSql() string

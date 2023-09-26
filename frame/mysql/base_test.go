@@ -24,3 +24,14 @@ func TestSelectBuilder_Select(t *testing.T) {
 	t.Log("tmpSql1 :", tmpsql1)
 
 }
+
+func TestUpdateBuilder(t *testing.T) {
+	updateSql := NewUpdateSQL()
+	tmpSql := updateSql.Table("system_role").
+		Where("description = ? ", "esse11").
+		Update("name", "test").Update("status", 1).
+		ToSql()
+
+	t.Log("tmpSql :", tmpSql)
+
+}
