@@ -5,6 +5,7 @@ import (
 	"github.com/any-call/gobase/util/myconv"
 	"reflect"
 	"regexp"
+	"strings"
 )
 
 type (
@@ -12,8 +13,8 @@ type (
 		Table(query string) SelectBuilder
 		Select(column ...string) SelectBuilder
 		Joins(query string, args ...any) SelectBuilder
-		InnerJoins(query string, args ...any) SelectBuilder
 		Where(query string, args ...any) SelectBuilder
+		Or(query string, args ...any) SelectBuilder
 		Group(name string) SelectBuilder
 		Order(v string) SelectBuilder
 		PageLimit(page, limit int) SelectBuilder
@@ -22,14 +23,16 @@ type (
 
 	UpdateBuilder interface {
 		Table(name string) UpdateBuilder
-		Where(query string, args ...any) UpdateBuilder
+		And(query string, args ...any) SelectBuilder
+		Or(query string, args ...any) SelectBuilder
 		Update(column string, v any) UpdateBuilder
 		ToSql() string
 	}
 
 	InsertBuilder interface {
 		Table(name string) InsertBuilder
-		Where(query string, args ...any) InsertBuilder
+		And(query string, args ...any) SelectBuilder
+		Or(query string, args ...any) SelectBuilder
 		Columns(col ...string) InsertBuilder
 		Values(v ...[]any) InsertBuilder
 		ToSql() string
@@ -62,6 +65,22 @@ func prepare(sql string, args ...any) string {
 
 			case reflect.String:
 				return fmt.Sprintf("'%s'", directObj)
+
+			case reflect.Array, reflect.Slice:
+				{
+					listArgs := []string{}
+					v := reflect.ValueOf(directObj)
+					for i := 0; i < v.Len(); i++ {
+						if v.Index(i).Kind() == reflect.String {
+							listArgs = append(listArgs, fmt.Sprintf("'%v'", v.Index(i)))
+						} else {
+							listArgs = append(listArgs, fmt.Sprintf("%v", v.Index(i)))
+						}
+					}
+
+					return "(" + strings.Join(listArgs, ",") + ")"
+				}
+
 			default:
 				return fmt.Sprintf("%v", directObj)
 			}
