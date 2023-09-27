@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"regexp"
 	"strings"
+	"time"
 )
 
 const (
@@ -82,6 +83,15 @@ func prepare(sql string, args ...any) string {
 					}
 
 					return "(" + strings.Join(listArgs, ",") + ")"
+				}
+			case reflect.Struct:
+				{
+					switch reflect.TypeOf(directObj).String() {
+					case "time.Time":
+						return fmt.Sprintf("'%s'", directObj.(time.Time).Format("2006-01-02 15:04:05"))
+					default:
+						return fmt.Sprintf("%v", directObj)
+					}
 				}
 
 			default:

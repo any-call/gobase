@@ -1,6 +1,9 @@
 package mysql
 
-import "testing"
+import (
+	"testing"
+	"time"
+)
 
 func TestSelectBuilder_Select(t *testing.T) {
 	selectSql := NewSelectSQL()
@@ -10,6 +13,7 @@ func TestSelectBuilder_Select(t *testing.T) {
 		Where("start_ip_num > ? and end_ip_num < ? ", 16777216, 19777216).
 		Where("area_country = ?", "中国").
 		Or("area_province = ?", "北京").
+		Where("check_time > ?", time.Now()).
 		Group("area_continent").
 		Select("area_continent", "count(*) as aa")
 
