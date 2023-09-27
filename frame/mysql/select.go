@@ -76,6 +76,10 @@ func (self *selectBuilder) Order(v string) SelectBuilder {
 func (self *selectBuilder) PageLimit(page, limit int) SelectBuilder {
 	self.limit = limit
 	self.offset = self.limit * (page - 1)
+	if self.offset < 0 {
+		self.offset = 0
+	}
+
 	return self
 }
 
