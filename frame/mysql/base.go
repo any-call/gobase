@@ -8,6 +8,10 @@ import (
 	"strings"
 )
 
+const (
+	DateFormatter1 = "%Y-%m-%d %H:%i:%s"
+)
+
 type (
 	SelectBuilder interface {
 		Table(query string) SelectBuilder
