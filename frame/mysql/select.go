@@ -41,9 +41,9 @@ func (self *selectBuilder) Where(query string, args ...any) SelectBuilder {
 	currWhere := prepare(query, args...)
 	if currWhere != "" {
 		if self.whereAnd == nil {
-			self.whereAnd = []string{fmt.Sprintf("(%s)", currWhere)}
+			self.whereAnd = []string{fmt.Sprintf("%s", currWhere)}
 		} else {
-			self.whereAnd = append(self.whereAnd, fmt.Sprintf("(%s)", currWhere))
+			self.whereAnd = append(self.whereAnd, fmt.Sprintf("%s", currWhere))
 		}
 	}
 
@@ -54,9 +54,9 @@ func (self *selectBuilder) Or(query string, args ...any) SelectBuilder {
 	currWhere := prepare(query, args...)
 	if currWhere != "" {
 		if self.whereOr == nil {
-			self.whereOr = []string{fmt.Sprintf("(%s)", currWhere)}
+			self.whereOr = []string{fmt.Sprintf("%s", currWhere)}
 		} else {
-			self.whereOr = append(self.whereOr, fmt.Sprintf("(%s)", currWhere))
+			self.whereOr = append(self.whereOr, fmt.Sprintf("%s", currWhere))
 		}
 	}
 
@@ -77,6 +77,45 @@ func (self *selectBuilder) PageLimit(page, limit int) SelectBuilder {
 	self.limit = limit
 	self.offset = self.limit * (page - 1)
 	return self
+}
+
+func (self *selectBuilder) ToCountSql() string {
+	baseSQL := fmt.Sprintf("select count(*) from %s ", self.from)
+
+	if self.joins != "" {
+		baseSQL += " " + self.joins
+	}
+
+	whereSql := ""
+	if self.whereAnd != nil && len(self.whereAnd) > 0 {
+		whereSql = strings.Join(self.whereAnd, " and ")
+	}
+
+	if self.whereOr != nil && len(self.whereOr) > 0 {
+		if whereSql != "" {
+			whereSql += " or "
+		}
+
+		whereSql += strings.Join(self.whereOr, " or ")
+	}
+
+	if whereSql != "" {
+		baseSQL += " where " + whereSql
+	}
+
+	if self.group != "" {
+		baseSQL += " group by  " + self.group
+	}
+
+	if self.order != "" {
+		baseSQL += " order by  " + self.order
+	}
+
+	if self.limit > 0 && self.offset >= 0 {
+		baseSQL = fmt.Sprintf("%s limit %d,%d ", baseSQL, self.offset, self.limit)
+	}
+
+	return baseSQL
 }
 
 func (self *selectBuilder) ToSql() string {

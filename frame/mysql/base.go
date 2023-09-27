@@ -18,6 +18,7 @@ type (
 		Group(name string) SelectBuilder
 		Order(v string) SelectBuilder
 		PageLimit(page, limit int) SelectBuilder
+		ToCountSql() string
 		ToSql() string
 	}
 

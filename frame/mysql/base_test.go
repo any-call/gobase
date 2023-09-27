@@ -4,17 +4,17 @@ import "testing"
 
 func TestSelectBuilder_Select(t *testing.T) {
 	selectSql := NewSelectSQL()
-	tmpSql := selectSql.Table("base_ip_region").
+	selectSql.Table("base_ip_region").
 		PageLimit(1, 20).
 		Order("start_ip desc").
 		Where("start_ip_num > ? and end_ip_num < ? ", 16777216, 19777216).
 		Where("area_country = ?", "中国").
 		Or("area_province = ?", "北京").
 		Group("area_continent").
-		Select("area_continent", "count(*) as aa").
-		ToSql()
+		Select("area_continent", "count(*) as aa")
 
-	t.Log("tmpSql :", tmpSql)
+	t.Log("tmpSql select:", selectSql.ToSql())
+	t.Log("tmpSql count:", selectSql.ToCountSql())
 
 	selectSql1 := NewSelectSQL()
 	tmpsql1 := selectSql1.Table("manager_user as a").Joins("left join system_role b on a.role_id = b.id").

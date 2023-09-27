@@ -25,9 +25,9 @@ func (self *updateBuilder) Where(query string, args ...any) UpdateBuilder {
 	currWhere := prepare(query, args...)
 	if currWhere != "" {
 		if self.whereAnd == nil {
-			self.whereAnd = []string{fmt.Sprintf("(%s)", currWhere)}
+			self.whereAnd = []string{fmt.Sprintf("%s", currWhere)}
 		} else {
-			self.whereAnd = append(self.whereAnd, fmt.Sprintf("(%s)", currWhere))
+			self.whereAnd = append(self.whereAnd, fmt.Sprintf("%s", currWhere))
 		}
 	}
 
@@ -38,9 +38,9 @@ func (self *updateBuilder) Or(query string, args ...any) UpdateBuilder {
 	currWhere := prepare(query, args...)
 	if currWhere != "" {
 		if self.whereOr == nil {
-			self.whereOr = []string{fmt.Sprintf("(%s)", currWhere)}
+			self.whereOr = []string{fmt.Sprintf("%s", currWhere)}
 		} else {
-			self.whereOr = append(self.whereOr, fmt.Sprintf("(%s)", currWhere))
+			self.whereOr = append(self.whereOr, fmt.Sprintf("%s", currWhere))
 		}
 	}
 
