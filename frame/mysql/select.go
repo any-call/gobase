@@ -111,14 +111,6 @@ func (self *selectBuilder) ToCountSql() string {
 		baseSQL += " group by  " + self.group
 	}
 
-	if self.order != "" {
-		baseSQL += " order by  " + self.order
-	}
-
-	if self.limit > 0 && self.offset >= 0 {
-		baseSQL = fmt.Sprintf("%s limit %d,%d ", baseSQL, self.offset, self.limit)
-	}
-
 	return baseSQL
 }
 
