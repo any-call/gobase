@@ -75,3 +75,21 @@ func ValidIPCIDR(ipcidr string) bool {
 
 	return true
 }
+
+func ValidIPBelongIPCidr(ipinfo, ipcidr string) bool {
+	ip := net.ParseIP(ipinfo)
+	if ip == nil {
+		return false
+	}
+
+	_, cidr, _ := net.ParseCIDR(ipcidr)
+	if cidr == nil {
+		return false
+	}
+
+	if cidr.Contains(ip) {
+		return true
+	}
+
+	return false
+}
