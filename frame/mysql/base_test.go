@@ -49,3 +49,11 @@ func TestInsertBuilder(t *testing.T) {
 	t.Log("tmpSql :", tmpSql)
 
 }
+
+func TestDeleteBuilder(t *testing.T) {
+	deleteSQL := NewDeleteSQL()
+	tmpSql := deleteSQL.Table("black_remoteip_info").Where("id in ?", []int{1, 2, 3}).
+		ToSql()
+
+	t.Log("tmpSql :", tmpSql)
+}

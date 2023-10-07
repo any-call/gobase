@@ -41,6 +41,13 @@ type (
 		AppendValues(v ...any) InsertBuilder
 		ToSql() string
 	}
+
+	DeleteBuilder interface {
+		Table(name string) DeleteBuilder
+		Where(query string, args ...any) DeleteBuilder
+		Or(query string, args ...any) DeleteBuilder
+		ToSql() string
+	}
 )
 
 // 占位符替换 ？
