@@ -1,6 +1,7 @@
 package mysql
 
 import (
+	"strings"
 	"testing"
 	"time"
 )
@@ -31,12 +32,11 @@ func TestSelectBuilder_Select(t *testing.T) {
 
 func TestUpdateBuilder(t *testing.T) {
 	updateSql := NewUpdateSQL()
-	tmpSql := updateSql.Table("system_role").
-		Where("description = ? ", "esse11").
-		Update("name", "test").Update("status", 1).
-		ToSql()
+	updateSql.Table("black_remoteip_info").Where("id = ?", uint(1)).
+		Update("ip", strings.TrimSpace("192.168.0.1")).Update("remark", "dfdddf")
+	updateSql.Update("is_ip_cidr", 0)
 
-	t.Log("tmpSql :", tmpSql)
+	t.Log("tmpSql :", updateSql.ToSql())
 
 }
 

@@ -69,7 +69,7 @@ func prepare(sql string, args ...any) string {
 				return fmt.Sprintf("%d", directObj)
 
 			case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-				return fmt.Sprintf("%ud", directObj)
+				return fmt.Sprintf("%d", directObj)
 
 			case reflect.Float32, reflect.Float64:
 				return fmt.Sprintf("%f", directObj)
