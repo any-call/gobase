@@ -1,5 +1,7 @@
 package myweb
 
-func do[REQ, RESP any](bObj Binding, render Render) {
+import "net/http"
+
+func do[REQ, RESP any](r *http.Request, req REQ, w http.ResponseWriter) {
 
 }

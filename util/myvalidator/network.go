@@ -67,3 +67,11 @@ func ValidDomain(domain string) bool {
 	match, _ := regexp.MatchString(pattern, domain)
 	return match
 }
+
+func ValidIPCIDR(ipcidr string) bool {
+	if _, _, err := net.ParseCIDR(ipcidr); err != nil {
+		return false
+	}
+
+	return true
+}
