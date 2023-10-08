@@ -13,6 +13,7 @@ type selectBuilder struct {
 	whereAnd []string
 	whereOr  []string
 	group    string
+	having   string
 	order    string
 	limit    int
 	offset   int
@@ -68,6 +69,11 @@ func (self *selectBuilder) Group(name string) SelectBuilder {
 	return self
 }
 
+func (self *selectBuilder) Having(query string, args ...any) SelectBuilder {
+	self.having = prepare(query, args...)
+	return self
+}
+
 func (self *selectBuilder) Order(v string) SelectBuilder {
 	self.order = v
 	return self
@@ -111,6 +117,10 @@ func (self *selectBuilder) ToCountSql() string {
 		baseSQL += " group by  " + self.group
 	}
 
+	if self.having != "" {
+		baseSQL += " having  " + self.having
+	}
+
 	return baseSQL
 }
 
@@ -145,6 +155,10 @@ func (self *selectBuilder) ToSql() string {
 
 	if self.group != "" {
 		baseSQL += " group by  " + self.group
+	}
+
+	if self.having != "" {
+		baseSQL += " having  " + self.having
 	}
 
 	if self.order != "" {

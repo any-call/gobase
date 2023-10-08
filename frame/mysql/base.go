@@ -19,6 +19,7 @@ type (
 		Select(column ...string) SelectBuilder
 		Joins(query string, args ...any) SelectBuilder
 		Where(query string, args ...any) SelectBuilder
+		Having(query string, args ...any) SelectBuilder
 		Or(query string, args ...any) SelectBuilder
 		Group(name string) SelectBuilder
 		Order(v string) SelectBuilder
