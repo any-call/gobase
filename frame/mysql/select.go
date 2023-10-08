@@ -121,6 +121,12 @@ func (self *selectBuilder) ToCountSql() string {
 		baseSQL += " having  " + self.having
 	}
 
+	if self.order != "" {
+		if self.group != "" {
+			baseSQL += " order by  " + self.order
+		}
+	}
+
 	return baseSQL
 }
 
