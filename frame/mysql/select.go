@@ -29,7 +29,12 @@ func (self *selectBuilder) Table(query string) SelectBuilder {
 }
 
 func (self *selectBuilder) Select(column ...string) SelectBuilder {
-	self.fields = column
+	if self.fields == nil || len(self.fields) == 0 {
+		self.fields = column
+	} else {
+		self.fields = append(self.fields, column...)
+	}
+
 	return self
 }
 
