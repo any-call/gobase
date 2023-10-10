@@ -5,6 +5,7 @@ import "time"
 type Cache interface {
 	Get(k string) (any, bool)             //取值
 	Set(k string, v any, d time.Duration) //设置值
+	Del(k string)                         //删除指定Key
 	HasKey(k string) bool
 	UpdateExpired(k string, d time.Duration) error //更新值 时效
 	UpdateValue(k string, v any) error

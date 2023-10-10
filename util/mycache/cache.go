@@ -46,6 +46,11 @@ func (self *cache) Get(k string) (any, bool) {
 	return obj.Object, true
 }
 
+func (self *cache) Del(k string) {
+	self.items.Remove(k)
+	return
+}
+
 func (self *cache) HasKey(k string) bool {
 	_, b := self.items.Value(k)
 	return b
