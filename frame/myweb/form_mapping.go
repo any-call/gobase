@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/textproto"
 	"reflect"
 	"strconv"
 	"strings"
@@ -399,4 +400,12 @@ func setFormMap(ptr any, form map[string][]string) error {
 
 func StringToBytes(s string) []byte {
 	return unsafe.Slice(unsafe.StringData(s), len(s))
+}
+
+type headerSource map[string][]string
+
+var _ setter = headerSource(nil)
+
+func (hs headerSource) TrySet(value reflect.Value, field reflect.StructField, tagValue string, opt setOptions) (bool, error) {
+	return setByForm(value, field, hs, textproto.CanonicalMIMEHeaderKey(tagValue), opt)
 }

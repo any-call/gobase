@@ -6,18 +6,14 @@ import (
 
 type (
 	//参数绑定
-	Binding interface {
-		Name() string
-		Bind(req *http.Request, obj any) error
-	}
+	BindFunc[REQ any] func(ctx *http.Request, req *REQ) (err error)
 
 	//入参检测
-	Valdate interface {
-		Check() error
-	}
+	ValidFunc[REQ any] func(req *REQ) (err error)
 
-	//响应数据
-	Render interface {
-		Render(w http.ResponseWriter, httpcode int) error
-	}
+	//业务处理
+	ServiceFunc[REQ, RESP any] func(req REQ) (resp RESP, err error)
+
+	//写包
+	WriteFunc[RESP any] func(w http.ResponseWriter, resp RESP, err error)
 )
