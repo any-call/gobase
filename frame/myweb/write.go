@@ -16,6 +16,18 @@ type kv struct {
 	Data any    `json:"data,omitempty"`
 }
 
+func WriteBindError(w http.ResponseWriter, err error) {
+	WriteJSON(w, http.StatusBadRequest, http.StatusBadRequest, "", err, nil)
+}
+
+func WriteServiceError(w http.ResponseWriter, err error) {
+	WriteJSON(w, http.StatusInternalServerError, http.StatusInternalServerError, "", err, nil)
+}
+
+func WriteSuccessJSON(w http.ResponseWriter, data any) {
+	WriteJSON(w, 0, http.StatusOK, "", nil, data)
+}
+
 func WriteJSON(w http.ResponseWriter, code, httpCode int, msg string, err error, data any) error {
 	dd := kv{
 		Code: code,
