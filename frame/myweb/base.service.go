@@ -23,13 +23,14 @@ func noReqRespFuncWrap[RESP any](thenFun NoReqRespService[RESP]) ServiceFunc[noR
 	return func(req noReq) (resp RESP, err error) { resp, err = thenFun(); return }
 }
 
-func do[REQ, RESP any](r *http.Request, w http.ResponseWriter, req REQ, bindFunc BindFunc[REQ], validateFunc ValidFunc[REQ], handleFunc ServiceFunc[REQ, RESP], writeFunc WriteFunc[RESP]) {
+func do[REQ, RESP any](r *http.Request, w http.ResponseWriter, req REQ, bindFunc BindFunc[REQ], validateFunc ValidFunc[REQ], handleFunc ServiceFunc[REQ, RESP]) {
 	if fn := bindFunc; fn != nil {
 		if err := fn(r, &req); err != nil {
 			WriteBindError(w, err)
 			return
 		}
 	}
+
 	if fn := validateFunc; fn != nil {
 		if err := fn(&req); err != nil {
 			WriteBindError(w, err)

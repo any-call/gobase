@@ -6,51 +6,51 @@ import (
 )
 
 func Query(r *http.Request, w http.ResponseWriter, thenFunc NoReqNoRespService) {
-	do[noReq, noResp](r, w, noReq{}, nil, nil, noReqNoRespFuncWrap(thenFunc), nil)
+	do[noReq, noResp](r, w, noReq{}, nil, nil, noReqNoRespFuncWrap(thenFunc))
 }
 
 func QueryReq[REQ any](r *http.Request, w http.ResponseWriter, req REQ, thenFunc ReqNoRespService[REQ]) {
-	do[REQ, noResp](r, w, req, nil, nil, reqNoRespFuncWrap(thenFunc), nil)
+	do[REQ, noResp](r, w, req, BindQuery[REQ], validate[REQ], reqNoRespFuncWrap(thenFunc))
 }
 
 func QueryResp[RESP any](r *http.Request, w http.ResponseWriter, thenFunc NoReqRespService[RESP]) {
-	do[noReq, RESP](r, w, noReq{}, nil, nil, noReqRespFuncWrap(thenFunc), nil)
+	do[noReq, RESP](r, w, noReq{}, nil, nil, noReqRespFuncWrap(thenFunc))
 }
 
 func QueryReqResp[REQ, RESP any](r *http.Request, w http.ResponseWriter, req REQ, thenFunc ServiceFunc[REQ, RESP]) {
-	do[REQ, RESP](r, w, req, nil, nil, thenFunc, nil)
+	do[REQ, RESP](r, w, req, BindQuery[REQ], validate[REQ], thenFunc)
 }
 
 func Body(r *http.Request, w http.ResponseWriter, thenFunc NoReqNoRespService) {
-	do[noReq, noResp](r, w, noReq{}, nil, nil, noReqNoRespFuncWrap(thenFunc), nil)
+	do[noReq, noResp](r, w, noReq{}, nil, nil, noReqNoRespFuncWrap(thenFunc))
 }
 
 func BodyReq[REQ any](r *http.Request, w http.ResponseWriter, req REQ, thenFunc ReqNoRespService[REQ]) {
-	do[REQ, noResp](r, w, req, nil, nil, reqNoRespFuncWrap(thenFunc), nil)
+	do[REQ, noResp](r, w, req, BindJson[REQ], validate[REQ], reqNoRespFuncWrap(thenFunc))
 }
 
 func BodyResp[RESP any](r *http.Request, w http.ResponseWriter, thenFunc NoReqRespService[RESP]) {
-	do[noReq, RESP](r, w, noReq{}, nil, nil, noReqRespFuncWrap(thenFunc), nil)
+	do[noReq, RESP](r, w, noReq{}, nil, nil, noReqRespFuncWrap(thenFunc))
 }
 
 func BodyReqResp[REQ, RESP any](r *http.Request, w http.ResponseWriter, req REQ, thenFunc ServiceFunc[REQ, RESP]) {
-	do[REQ, RESP](r, w, req, nil, nil, thenFunc, nil)
+	do[REQ, RESP](r, w, req, BindJson[REQ], validate[REQ], thenFunc)
 }
 
 func Form(r *http.Request, w http.ResponseWriter, thenFunc NoReqNoRespService) {
-	do[noReq, noResp](r, w, noReq{}, nil, nil, noReqNoRespFuncWrap(thenFunc), nil)
+	do[noReq, noResp](r, w, noReq{}, nil, nil, noReqNoRespFuncWrap(thenFunc))
 }
 
 func FormReq[REQ any](r *http.Request, w http.ResponseWriter, req REQ, thenFunc ReqNoRespService[REQ]) {
-	do[REQ, noResp](r, w, req, nil, nil, reqNoRespFuncWrap(thenFunc), nil)
+	do[REQ, noResp](r, w, req, BindForm[REQ], validate[REQ], reqNoRespFuncWrap(thenFunc))
 }
 
 func FormResp[RESP any](r *http.Request, w http.ResponseWriter, thenFunc NoReqRespService[RESP]) {
-	do[noReq, RESP](r, w, noReq{}, nil, nil, noReqRespFuncWrap(thenFunc), nil)
+	do[noReq, RESP](r, w, noReq{}, nil, nil, noReqRespFuncWrap(thenFunc))
 }
 
 func FormReqResp[REQ, RESP any](r *http.Request, w http.ResponseWriter, req REQ, thenFunc ServiceFunc[REQ, RESP]) {
-	do[REQ, RESP](r, w, req, nil, nil, thenFunc, nil)
+	do[REQ, RESP](r, w, req, BindForm[REQ], validate[REQ], thenFunc)
 }
 
 func validate[REQ any](req *REQ) (err error) {
