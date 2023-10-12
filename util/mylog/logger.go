@@ -90,12 +90,41 @@ func (l *logger) Fatalf(format string, args ...interface{}) {
 	l.entry().write(FatalLevel, format, args...)
 }
 
+func (l *logger) InitLevel(level Level, en bool) *logger {
+	l.SetOptions(WithLevel(level, en))
+	return l
+}
+
 func StdLogger() *logger {
 	return std
 }
 
 func SetOptions(opts ...Option) {
 	std.SetOptions(opts...)
+}
+
+func InitDebugLevel(en bool) *logger {
+	return std.InitLevel(DebugLevel, en)
+}
+
+func InitInfoLevel(en bool) *logger {
+	return std.InitLevel(InfoLevel, en)
+}
+
+func InitWarnLevel(en bool) *logger {
+	return std.InitLevel(WarnLevel, en)
+}
+
+func InitErrorLevel(en bool) *logger {
+	return std.InitLevel(ErrorLevel, en)
+}
+
+func InitPanicLevel(en bool) *logger {
+	return std.InitLevel(PanicLevel, en)
+}
+
+func InitFatalLevel(en bool) *logger {
+	return std.InitLevel(FatalLevel, en)
 }
 
 // std logger

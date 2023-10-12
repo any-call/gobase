@@ -8,7 +8,7 @@ import (
 // log options
 type options struct {
 	output        io.Writer
-	level         Level
+	level         map[Level]bool
 	stdLevel      Level
 	formatter     Formatter
 	disableCaller bool
@@ -30,6 +30,16 @@ func initOptions(opts ...Option) (o *options) {
 		o.formatter = &TextFormatter{}
 	}
 
+	if o.level == nil {
+		o.level = make(map[Level]bool, 5)
+		o.level[DebugLevel] = true
+		o.level[InfoLevel] = true
+		o.level[WarnLevel] = true
+		o.level[ErrorLevel] = true
+		o.level[PanicLevel] = true
+		o.level[FatalLevel] = true
+	}
+
 	return
 }
 
@@ -39,9 +49,9 @@ func WithOutput(output io.Writer) Option {
 	}
 }
 
-func WithLevel(level Level) Option {
+func WithLevel(level Level, en bool) Option {
 	return func(o *options) {
-		o.level = level
+		o.level[level] = en
 	}
 }
 

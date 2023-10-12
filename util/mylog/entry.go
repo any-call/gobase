@@ -29,7 +29,7 @@ func entry(logg *logger) *Entry {
 }
 
 func (e *Entry) write(level Level, format string, args ...any) {
-	if e.logger.opt.level > level {
+	if b, _ := e.logger.opt.level[level]; !b {
 		return
 	}
 	e.Time = time.Now()

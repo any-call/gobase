@@ -37,6 +37,7 @@ func TestList_difference(t *testing.T) {
 func Test_mylog(t *testing.T) {
 	//opt := mylog.WithFormatter(&mylog.JsonFormatter{IgnoreBasicFields: true})
 	//mylog.SetOptions(opt)
+	//mylog.InitFatalLevel(false)
 
 	mylog.Debug("this is test")
 	mylog.Info("this is test")
