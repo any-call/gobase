@@ -11,9 +11,13 @@ type (
 	//入参检测
 	ValidFunc[REQ any] func(req *REQ) (err error)
 
+	CheckFun interface {
+		Check() error
+	}
+
 	//业务处理
 	ServiceFunc[REQ, RESP any] func(req REQ) (resp RESP, err error)
 
 	//写包
-	WriteFunc[RESP any] func(w http.ResponseWriter, resp RESP, err error)
+	WriteFunc[RESP any] func(w http.ResponseWriter, httpCode int, resp RESP, err error)
 )

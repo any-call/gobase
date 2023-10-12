@@ -8,7 +8,7 @@ import (
 
 const defaultMemory = 32 << 20
 
-func BindJson(req *http.Request, obj any) error {
+func BindJson[REQ any](req *http.Request, obj *REQ) error {
 	if req == nil {
 		return errors.New("invalid request")
 	}
@@ -17,7 +17,7 @@ func BindJson(req *http.Request, obj any) error {
 	return decoder.Decode(obj)
 }
 
-func BindQuery(req *http.Request, obj any) error {
+func BindQuery[REQ any](req *http.Request, obj *REQ) error {
 	if req == nil {
 		return errors.New("invalid request")
 	}
@@ -30,7 +30,7 @@ func BindQuery(req *http.Request, obj any) error {
 	return nil
 }
 
-func BindForm(req *http.Request, obj any) error {
+func BindForm[REQ any](req *http.Request, obj *REQ) error {
 	if req == nil {
 		return errors.New("invalid request")
 	}
@@ -47,7 +47,7 @@ func BindForm(req *http.Request, obj any) error {
 	return nil
 }
 
-func BindPostForm(req *http.Request, obj any) error {
+func BindPostForm[REQ any](req *http.Request, obj *REQ) error {
 	if req == nil {
 		return errors.New("invalid request")
 	}
@@ -61,7 +61,7 @@ func BindPostForm(req *http.Request, obj any) error {
 	return nil
 }
 
-func BindHeader(req *http.Request, obj any) error {
+func BindHeader[REQ any](req *http.Request, obj *REQ) error {
 	if req == nil {
 		return errors.New("invalid request")
 	}
