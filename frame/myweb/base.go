@@ -20,4 +20,15 @@ type (
 
 	//写包
 	WriteFunc[RESP any] func(w http.ResponseWriter, httpCode int, resp RESP, err error)
+
+	//-------
+	PageReq struct {
+		Limit int `form:"limit" validate:"min(1,无效的分页数据)"`
+		Page  int `form:"page"`
+	}
+
+	PageResp[T any] struct {
+		Total int64 `json:"total"`
+		List  []T   `json:"list"`
+	}
 )
