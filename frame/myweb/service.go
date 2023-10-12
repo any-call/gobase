@@ -58,11 +58,14 @@ func validate[REQ any](req *REQ) (err error) {
 		return err
 	}
 
-	if v, ok := req.(CheckFun); ok {
+	var chkObj any = *req
+	var chkObjPtr any = req
+
+	if v, ok := chkObj.(CheckFun); ok {
 		return v.Check()
 	}
 
-	if v, ok := (&req).(CheckFun); ok {
+	if v, ok := chkObjPtr.(CheckFun); ok {
 		return v.Check()
 	}
 
