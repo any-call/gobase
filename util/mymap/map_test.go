@@ -6,6 +6,7 @@ import (
 
 func TestMap_Insert(t *testing.T) {
 	mymap := NewMap[int, string]()
+	mymap.Reset(len([]int{}))
 	mymap.Insert(1, "jin")
 	mymap.Insert(2, "gui")
 	mymap.Insert(3, "hua")

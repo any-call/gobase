@@ -33,6 +33,15 @@ func (l *Map[K, V]) ResetByMap(items map[K]V) {
 	return
 }
 
+func (l *Map[K, V]) Reset(len int) {
+	l.lock.Lock()
+	defer l.lock.Unlock()
+
+	l.mapList = make(map[K]V, len)
+
+	return
+}
+
 func (l *Map[K, V]) Insert(k K, v V) {
 	l.lock.Lock()
 	defer l.lock.Unlock()
