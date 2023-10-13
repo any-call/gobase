@@ -5,7 +5,7 @@ import (
 )
 
 type dataOP[DATA any] struct {
-	sync.RWMutex
+	sync.Mutex
 	data DATA
 }
 
@@ -14,29 +14,24 @@ func NewData[DATA any](obj DATA) Data[DATA] {
 }
 
 func (self *dataOP[DATA]) Get() DATA {
-	self.RLock()
-	defer self.RUnlock()
+	self.Lock()
+	defer self.Unlock()
 
 	return self.data
 }
 
-func (self *dataOP[DATA]) Set(fn func(d DATA)) {
+func (self *dataOP[DATA]) Set(d DATA) {
+	self.Lock()
+	defer self.Unlock()
+
+	self.data = d
+}
+
+func (self *dataOP[DATA]) SetItem(fn func(d DATA)) {
 	self.Lock()
 	defer self.Unlock()
 
 	if fn != nil {
 		fn(self.data)
 	}
-}
-
-func (self *dataOP[DATA]) TrySet(fn func(d DATA)) bool {
-	b := self.TryLock()
-	if b {
-		if fn != nil {
-			fn(self.data)
-		}
-		return b
-	}
-
-	return b
 }
