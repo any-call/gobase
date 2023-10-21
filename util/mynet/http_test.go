@@ -15,7 +15,8 @@ func Test_aaaa(t *testing.T) {
 		t.Log("dns :", dnsip)
 	}
 
-	t.Log("ret is :")
+	ip, err := GetPublicIP()
+	t.Log("ret is :", ip, err)
 }
 
 func BenchmarkGetJson(t *testing.B) {

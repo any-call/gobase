@@ -3,8 +3,11 @@ package mynet
 import (
 	"fmt"
 	"github.com/any-call/gobase/util/myos"
+	"io"
 	"net"
 	"net/http"
+	"strconv"
+	"strings"
 )
 
 //A类：10段，后三位自由分配，也就是 10.0.0.0 - 10.255.255.255；
@@ -103,4 +106,91 @@ func GetLocalDNSServer() ([]string, error) {
 	}
 
 	return nil, nil
+}
+
+func GetPublicIP() (ip string, err error) {
+	ip, err = ipinfo()
+	if err != nil {
+		ip, err = ifconfig()
+		if err != nil {
+			ip, err = ipify()
+		}
+	}
+	return
+}
+
+func ipinfo() (ip string, err error) {
+	resp, err := http.Get("https://ipinfo.io/ip")
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+	sb, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return
+	} else {
+		ip = string(sb)
+		_, err = checkIP(ip)
+	}
+	return
+}
+
+func ifconfig() (ip string, err error) {
+	resp, err := http.Get("https://ifconfig.me/ip")
+	if err != nil {
+		return
+	}
+
+	defer resp.Body.Close()
+
+	sb, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return
+	} else {
+		ip = string(sb)
+		_, err = checkIP(ip)
+	}
+	return
+}
+
+func ipify() (ip string, err error) {
+	resp, err := http.Get("https://api.ipify.org")
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+	sb, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return
+	} else {
+		ip = string(sb)
+		_, err = checkIP(ip)
+	}
+	return
+}
+
+var shiftIndex = []int{24, 16, 8, 0}
+
+func checkIP(ip string) (uint32, error) {
+	var ps = strings.Split(ip, ".")
+	if len(ps) != 4 {
+		return 0, fmt.Errorf("invalid ip address `%s`", ip)
+	}
+
+	var val = uint32(0)
+	for i, s := range ps {
+		d, err := strconv.Atoi(s)
+		if err != nil {
+			return 0, fmt.Errorf("the %dth part `%s` is not an integer", i, s)
+		}
+
+		if d < 0 || d > 255 {
+			return 0, fmt.Errorf("the %dth part `%s` should be an integer bettween 0 and 255", i, s)
+		}
+
+		val |= uint32(d) << shiftIndex[i]
+	}
+
+	// convert the ip to integer
+	return val, nil
 }
