@@ -61,3 +61,13 @@ func Test_other(t *testing.T) {
 	serverType := resp.Header.Get("Server")
 	fmt.Println("Server type:", serverType)
 }
+
+func Test_lookNS(t *testing.T) {
+	list, err := LookupNSWithSer("rwscode.com", time.Second, "114.114.114.114")
+	if err != nil {
+		t.Error("look ns err:", err)
+		return
+	}
+
+	t.Log("look ns :", list)
+}

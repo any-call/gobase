@@ -3,6 +3,7 @@ package mynet
 import (
 	"bufio"
 	"context"
+	"fmt"
 	"net"
 	"os/exec"
 	"regexp"
@@ -35,6 +36,34 @@ func LookupNSEx(domain string, timeout time.Duration) (ns []string, err error) {
 		}
 	}
 	return
+}
+
+func LookupNSWithSer(domain string, timeout time.Duration, serIP string) (list []string, err error) {
+	// 创建自定义的DNS解析器
+	resolver := &net.Resolver{
+		PreferGo: true,
+		Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+			// 在这里指定要查询的DNS服务器
+			dialer := &net.Dialer{
+				Timeout:   timeout,
+				KeepAlive: timeout,
+			}
+			return dialer.DialContext(ctx, network, fmt.Sprintf("%s:53", serIP))
+		},
+	}
+
+	// 使用自定义的解析器查询NS记录
+	ns, err := resolver.LookupNS(context.Background(), domain)
+	if err != nil {
+		return nil, err
+	}
+
+	list = make([]string, len(ns))
+	for i, record := range ns {
+		list[i] = record.Host
+	}
+
+	return list, nil
 }
 
 func LookupIP(domain string) (ipRec []net.IP, err error) {
