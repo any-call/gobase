@@ -4,15 +4,9 @@ import (
 	"encoding/binary"
 	"fmt"
 	"os"
-	"strconv"
-	"strings"
 )
 
 const (
-	HeaderInfoLength      = 256
-	VectorIndexRows       = 256
-	VectorIndexCols       = 256
-	VectorIndexSize       = 8
 	SegmentIndexBlockSize = 14
 )
 
@@ -239,30 +233,4 @@ func (s *Searcher) read(offset int64, buff []byte) error {
 	}
 
 	return nil
-}
-
-var shiftIndex = []int{24, 16, 8, 0}
-
-func CheckIP(ip string) (uint32, error) {
-	var ps = strings.Split(ip, ".")
-	if len(ps) != 4 {
-		return 0, fmt.Errorf("invalid ip address `%s`", ip)
-	}
-
-	var val = uint32(0)
-	for i, s := range ps {
-		d, err := strconv.Atoi(s)
-		if err != nil {
-			return 0, fmt.Errorf("the %dth part `%s` is not an integer", i, s)
-		}
-
-		if d < 0 || d > 255 {
-			return 0, fmt.Errorf("the %dth part `%s` should be an integer bettween 0 and 255", i, s)
-		}
-
-		val |= uint32(d) << shiftIndex[i]
-	}
-
-	// convert the ip to integer
-	return val, nil
 }
