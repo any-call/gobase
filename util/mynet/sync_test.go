@@ -16,10 +16,10 @@ func Test_syncOP(t *testing.T) {
 		}{ID: 001, Name: "luis.jin"}
 	}
 
-	fn3 := func(key string) any {
+	fn3 := func(key string) (any, error) {
 		return map[string]int{
 			"001": 223,
-		}
+		}, nil
 	}
 	fn4 := func() bool {
 		return false

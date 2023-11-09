@@ -19,3 +19,13 @@ func TestSplitWithRuneLen(t *testing.T) {
 		t.Logf(" s list[%d]:%s \r\n", i, list2[i])
 	}
 }
+
+func TestStyle(t *testing.T) {
+	t.Log(" is white space :")
+	t.Log("toSnake :", ToSnake("hello world"))
+	t.Log("toCamel :", ToCamel("Hello world"))
+	t.Log("toTitle :", ToTitle("jin gui hua"))
+	t.Log("toProperty :", ToProperty("Jin gui hua"))
+	t.Log("toPascal :", ToPascal("jin gui hua"))
+	t.Log("toHeader :", ToHeader("jin gui hua"))
+}
