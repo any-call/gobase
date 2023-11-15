@@ -57,6 +57,10 @@ func RemoveSpec(str string, spec string) string {
 	return strings.Join(strings.Split(str, spec), "")
 }
 
+func RemoveSpace(str string) string {
+	return strings.Join(strings.Fields(str), "")
+}
+
 // 计算给定src字符串中出现cond的次数
 func CalcStrFreq(str, cond string) (n int) {
 	src := []rune(str)
