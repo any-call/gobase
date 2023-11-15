@@ -131,6 +131,22 @@ func ToTitle(input string) string {
 	return result
 }
 
+// FirstUpper 字符串首字母大写
+func ToFirstUpper(s string) string {
+	if s == "" {
+		return ""
+	}
+	return strings.ToUpper(s[:1]) + s[1:]
+}
+
+// FirstLower 字符串首字母小写
+func ToFirstLower(s string) string {
+	if s == "" {
+		return ""
+	}
+	return strings.ToLower(s[:1]) + s[1:]
+}
+
 func IsWhitespace(r rune) bool {
 	result := false
 
