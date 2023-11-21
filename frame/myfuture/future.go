@@ -1,7 +1,6 @@
 package myfuture
 
 import (
-	"context"
 	"fmt"
 )
 
@@ -12,13 +11,8 @@ import (
 //○ timeout : 延时执行
 
 type future[T any] struct {
-	retOK    T
-	retFail  error
-	complete bool
-	wait     chan bool
-	ctx      context.Context
-	cancel   func()
-
+	retOK   T
+	retFail error
 	//---
 	onThenCB   func(T)
 	onCachErr  func(err error)
@@ -30,12 +24,7 @@ func Start[T any](f func() (T, error)) Future[T] {
 		panic("empty func")
 	}
 
-	fut := &future[T]{
-		wait: make(chan bool),
-	}
-
-	fut.ctx, fut.cancel = context.WithCancel(context.Background())
-
+	fut := &future[T]{}
 	go func() {
 		defer func() {
 			if r := recover(); r != nil {
@@ -64,11 +53,6 @@ func Start[T any](f func() (T, error)) Future[T] {
 		if fut.onComplete != nil {
 			fut.onComplete()
 		}
-
-		//fut.ret = &result[T]{success, failure}
-		//fut.complete = true
-		//fut.wait <- true
-		//close(fut.wait)
 	}()
 
 	return fut
@@ -87,23 +71,4 @@ func (self *future[T]) Catch(f func(error)) Future[T] {
 func (self *future[T]) Complete(f func()) Future[T] {
 	self.onComplete = f
 	return self
-}
-
-func (self *future[T]) Cancel() {
-	self.cancel()
-}
-
-func (self *future[T]) Get() (T, error) {
-	if self.complete {
-		return self.retOK, self.retFail
-	}
-
-	select {
-	case <-self.wait:
-		return self.retOK, self.retFail
-
-	case <-self.ctx.Done():
-		self.retFail = self.ctx.Err()
-		return self.retOK, self.retFail
-	}
 }
