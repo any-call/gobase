@@ -11,9 +11,6 @@ import (
 //○ timeout : 延时执行
 
 type future[T any] struct {
-	retOK   T
-	retFail error
-	//---
 	onThenCB   func(T)
 	onCachErr  func(err error)
 	onComplete func()
@@ -39,14 +36,14 @@ func Start[T any](f func() (T, error)) Future[T] {
 			}
 		}()
 
-		fut.retOK, fut.retFail = f()
-		if fut.retFail != nil {
+		retOK, retFail := f()
+		if retFail != nil {
 			if fut.onCachErr != nil {
-				fut.onCachErr(fut.retFail)
+				fut.onCachErr(retFail)
 			}
 		} else {
 			if fut.onThenCB != nil {
-				fut.onThenCB(fut.retOK)
+				fut.onThenCB(retOK)
 			}
 		}
 

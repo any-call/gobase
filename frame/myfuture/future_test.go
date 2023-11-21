@@ -19,7 +19,5 @@ func TestNewFuture(t *testing.T) {
 		fmt.Println(" run err:", err)
 	})
 
-	//ret, err := fu1.Get()
-	//t.Log("ret :", ret, err)
-	time.Sleep(time.Second * 20)
+	time.Sleep(time.Second * 4)
 }
