@@ -21,3 +21,22 @@ func TestNewFuture(t *testing.T) {
 
 	time.Sleep(time.Second * 4)
 }
+
+func autoIncre() func() int {
+	var x int
+	return func() int {
+		x++
+		return x
+	}
+}
+
+func TestClose(t *testing.T) {
+	i := autoIncre()
+	fmt.Println("i:", i())
+	fmt.Println("i:", i())
+	fmt.Println("i:", i())
+	fmt.Println("i:", i())
+
+	print("single i:", autoIncre()())
+
+}
