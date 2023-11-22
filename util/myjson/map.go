@@ -13,7 +13,7 @@ type (
 		Value any
 	}
 
-	orderArray []any
+	OrderArray []any
 
 	OrderMap struct {
 		list []FieldValue
@@ -114,7 +114,7 @@ func (self *OrderMap) unmarshalEmbededObject(d *json.Decoder) error {
 			}
 			val = obj
 		case json.Delim('['):
-			var arr orderArray
+			var arr OrderArray
 			err = arr.unmarshalEmbededArray(d)
 			val = arr
 		default:
@@ -145,7 +145,7 @@ func (self *OrderMap) unmarshalEmbededObject(d *json.Decoder) error {
 	return err
 }
 
-func (self *orderArray) unmarshalEmbededArray(d *json.Decoder) error {
+func (self *OrderArray) unmarshalEmbededArray(d *json.Decoder) error {
 	for d.More() {
 		token, err := d.Token()
 		if err == io.EOF || (err == nil && token == json.Delim(']')) {
@@ -162,7 +162,7 @@ func (self *orderArray) unmarshalEmbededArray(d *json.Decoder) error {
 			}
 			val = obj
 		case json.Delim('['):
-			var arr orderArray
+			var arr OrderArray
 			err = arr.unmarshalEmbededArray(d)
 			val = arr
 		default:
@@ -184,7 +184,7 @@ func (self *orderArray) unmarshalEmbededArray(d *json.Decoder) error {
 	}
 
 	if *self == nil {
-		*self = orderArray(make([]interface{}, 0))
+		*self = OrderArray(make([]interface{}, 0))
 	}
 
 	return nil
