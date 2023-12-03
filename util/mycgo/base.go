@@ -1,5 +1,12 @@
 package mycgo
 
+/*
+#include <stdio.h>
+#include <stdlib.h>
+void print(char *str) {
+    printf("%s\n", str);
+}
+*/
 import "C"
 
 type (
@@ -15,5 +22,5 @@ func ToPTRChar(in string) PtrChar {
 }
 
 func CPrintln(char PtrChar) {
-	C.print("%s\n", char)
+	C.print(char)
 }
