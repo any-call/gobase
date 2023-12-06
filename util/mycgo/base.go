@@ -9,18 +9,14 @@ void print(char *str) {
 */
 import "C"
 
-type (
-	PtrChar *C.char
-)
-
-func ToString(in PtrChar) string {
+func ToString(in *C.char) string {
 	return C.GoString(in)
 }
 
-func ToPTRChar(in string) PtrChar {
+func ToPTRChar(in string) *C.char {
 	return C.CString(in)
 }
 
-func CPrintln(char PtrChar) {
+func CPrintln(char *C.char) {
 	C.print(char)
 }
