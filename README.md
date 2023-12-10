@@ -1,14 +1,22 @@
-# gobase  基于go ,封装一些常的框架 及功能库， 会持续保持更新
+# gobase  基于go的原生SDK封装的常用功能与框架（为了包的简洁性，完全不引用第三方包），持续保持更新
+## 项目主要分为 frame 与 util 两个板块，基本上所有的封装包都有测试用例 。
 
-## util  功能库
-## frame 基础框架
-### mysignal 事件框架
-### mybing 数据驱动框架
+## frame ： 主要是一些项目开发中的常用框架封装，具何如下：
+### mybind : 功能是：将两个对象A[监听],B[被监听] 建立一个绑定关系,则B 的数据变更将会被A实时获取 。
+### mybus  : 基于 订阅者与发布者模型封装 
+### myctrl : 提供 延时执时，定时执时 与 并发数控制执行的接口 
+### mydata : 提供并发安全的数据操作模型 。
+### myfuture : 仿flutter中future函数封装 。
+### mysignal : 基于基于QT 的信号 与 槽 的思路来封装 ，对象间通信号，可以定义多个信号,对象间的通信则通过信号与槽建立联接来实现通信。
+### mysql   ： SQL语句构造器 。
 
-### 部分已封装库介绍
-### mylist : 用于封装 切片的常用功能
-### mysignal :基于QT 的信号 与 槽 的思路来封装，对象间通信号，可以定义多个信号,对象间的通信则通过信号与槽建立联接来实现通信。
-### myvalidator :用于常用数据格式的验证
+
+## util  基础功能库封装 ，部分常用库介绍
+### mycache: 封装并发安全的 数据缓存功能
+### mych ： 基于生产者，消费者功能封装
+### mylist : 封装并发安全的数组功能
+### mymap : 封装并发安全的数组功能
+### myvalidator :封装常用的数据模型校验功能
 #### 支持格式如下：
 #### enum :针对数组，字符串
 #### valid: 针对 结构体，map, 切片 的递归遍历标识
@@ -20,94 +28,3 @@
 #### arr_minlen/arr_minlength ;arr_maxlen/arr_maxlength;arr_rangelen/arr_rangelength
 #### map类：
 #### map_minlen/map_minlength ;map_maxlen/map_maxlength;map_rangelen/map_rangelength
-
-
-
-### validator Demo 
-
-#### type MyReq struct {
-#### ID    int      `json:"id" validate:"min(10,不正确的ID) max(100, 不正确的ID值)"`
-#### Name  string   `json:"name" validate:"min_len(1,用户名不能为空)"`
-#### Sex   string   `json:"sex" validate:"enum(男|女,错误的性别)"`
-#### MyArr []MyDept `validate:"arr_minlen(1,入参数组不能为空) valid(T)"`
-#### MyMap map[string]MyDept
-#### }
-
-#### type MyDept struct {
-#### DeptID int `json:"dept_id" validate:"range(1,10,错误的部门ID)"`
-#### Name   string   `validate:"rangelen(6,10,名称长度必须是6-10)"`
-#### }
-
-#### func Test_validator(t *testing.T) {
-#### req := MyReq{
-#### ID:   100,
-#### Name: "this is test",
-#### Sex:  "男",
-#### MyArr: []MyDept{{
-#### DeptID: 5,
-#### Name:   "lu889i",
-#### }, {
-#### DeptID: 1,
-#### Name:   "jinguihua",
-#### }},
-#### MyMap: map[string]MyDept{
-#### "12": {
-#### DeptID: 1001,
-#### Name:   "good",
-#### },
-#### },
-#### }
-
-#### 	if err := Validate(req); err != nil {
-#### 	t.Error("err:", err)
-#### 		return
-#### 	}
-
-#### 	t.Log("validate: ok ")
-#### }
-
-
-### 数据驱动 mybind
-
-#### type Dept struct {
-#### Name  string
-#### Total int
-#### }
-
-#### func (d Dept) DataChanged(val any) {
-#### fmt.Println("data change to :", val)
-#### }
-
-#### func Test_bind(t *testing.T) {
-#### type myStruct struct {
-#### Name string
-#### Sex  int
-#### }
-
-#### var monitorObj map[string]int = make(map[string]int, 0)
-
-#### listener := &Dept{
-####		Name:  "jin",
-####		Total: 10,
-####	}
-
-####	if err := AddListener(listener, &monitorObj); err != nil {
-####		t.Error(err)
-####		return
-####	}
-
-####	go func() {
-####		var i int
-####		for {
-####			i += 5
-####			SetData(func() {
-####				monitorObj["name"] = i
-####			})
-
-####			time.Sleep(time.Millisecond)
-####		}
-####	}()
-
-####	time.Sleep(time.Second * 10)
-####	t.Log("run ok ")
-#### }
