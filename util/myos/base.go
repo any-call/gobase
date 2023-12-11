@@ -6,6 +6,15 @@ import (
 	"strings"
 )
 
+func BindEnv(name, defValue string) (bindVal string) {
+	bindVal = defValue
+	if val := os.Getenv(name); val != "" {
+		bindVal = val
+	}
+
+	return
+}
+
 // IsWin determine whether the system is windows.
 func IsWin() bool {
 	return runtime.GOOS == "windows"
