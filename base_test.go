@@ -2,10 +2,10 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/any-call/gobase/util/mylist"
-	"github.com/any-call/gobase/util/mylog"
-	"github.com/any-call/gobase/util/myos"
-	"github.com/any-call/gobase/util/myvalidator"
+	"gitee.com/any-call/gobase/util/mylist"
+	"gitee.com/any-call/gobase/util/mylog"
+	"gitee.com/any-call/gobase/util/myos"
+	"gitee.com/any-call/gobase/util/myvalidator"
 	"testing"
 )
 

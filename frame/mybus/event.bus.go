@@ -2,7 +2,7 @@ package mybus
 
 import (
 	"fmt"
-	"github.com/any-call/gobase/util/mymap"
+	"gitee.com/any-call/gobase/util/mymap"
 	"reflect"
 	"sync"
 )

@@ -1,7 +1,7 @@
 package mycond
 
 import (
-	"github.com/any-call/gobase/util/myconv"
+	"gitee.com/any-call/gobase/util/myconv"
 	"reflect"
 )
 

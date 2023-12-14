@@ -1,7 +1,7 @@
 package myweb
 
 import (
-	"github.com/any-call/gobase/util/myvalidator"
+	"gitee.com/any-call/gobase/util/myvalidator"
 	"net/http"
 )
 

@@ -4,7 +4,7 @@ import (
 	"encoding/gob"
 	"errors"
 	"fmt"
-	"github.com/any-call/gobase/util/mymap"
+	"gitee.com/any-call/gobase/util/mymap"
 	"net"
 	"net/http"
 	"net/rpc"

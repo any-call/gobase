@@ -3,7 +3,7 @@ package myvalidator
 import (
 	"errors"
 	"fmt"
-	"github.com/any-call/gobase/util/myconv"
+	"gitee.com/any-call/gobase/util/myconv"
 	"reflect"
 	"strings"
 )
@@ -72,7 +72,7 @@ func (v *ValidInfo) Valid() error {
 
 	case "date":
 		return date(v.val, v.param)
-		
+
 	}
 
 	return nil

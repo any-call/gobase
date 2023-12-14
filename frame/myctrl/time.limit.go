@@ -1,7 +1,7 @@
 package myctrl
 
 import (
-	"github.com/any-call/gobase/util/mycache"
+	"gitee.com/any-call/gobase/util/mycache"
 	"sync"
 	"sync/atomic"
 	"time"
