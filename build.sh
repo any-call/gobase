@@ -12,3 +12,6 @@ CGO_ENABLED=1 GOARCH=amd64 GOOS=darwin CC="clang $CFLAGS $CGO_LDFLAGS" go build 
 
 ## 编译成 .so for flutter
 go build --buildmode=c-shared -o ../convert_gui/library/json_to_model.so main.go
+
+
+还有编译为 Android :  https://blog.csdn.net/HeroRazor/article/details/121436261
