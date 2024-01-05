@@ -90,4 +90,14 @@ func RemoveDuplicItem[E comparable](list []E) []E {
 	return ret
 }
 
-//比较两个数组元素
+// a list to b list
+func ToList[F, T any](org *List[F], f func(o F) T) *List[T] {
+	ret := NewList[T]()
+	if org != nil && f != nil {
+		org.Range(func(index int, v F) {
+			ret.Append(f(v))
+		})
+	}
+
+	return ret
+}
