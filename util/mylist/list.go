@@ -312,6 +312,20 @@ func (l *List[E]) Range(f func(index int, v E)) {
 	}
 }
 
+func (l *List[E]) Where(f func(index int, v E) bool) *List[E] {
+	l.lock.RLock()
+	defer l.lock.RUnlock()
+
+	ret := NewList[E]()
+	for i, v := range l.list {
+		if f(i, v.value) {
+			ret.Append(v.value)
+		}
+	}
+
+	return ret
+}
+
 func (l *List[E]) ToArray() []E {
 	l.lock.RLock()
 	defer l.lock.RUnlock()
