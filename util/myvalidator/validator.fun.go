@@ -43,6 +43,9 @@ func (v *ValidInfo) Valid() error {
 	case "map_minlength", "map_minlen":
 		return mapMinLen(v.val, v.param)
 
+	case "length", "len":
+		return length(v.val, v.param)
+
 	case "map_maxlength", "map_maxlen":
 		return mapMaxLen(v.val, v.param)
 
@@ -242,6 +245,29 @@ func rangeValue(val reflect.Value, param []string) error {
 }
 
 // 字符类
+func length(val reflect.Value, param []string) error {
+	if param == nil && len(param) == 0 {
+		return nil
+	}
+
+	baseStr := param[0]
+	switch val.Kind() {
+	case reflect.String:
+		{
+			if baseVal, err := myconv.StrToNum[int](baseStr); err != nil {
+				return err
+			} else {
+				if len(val.String()) != baseVal {
+					return errors.New(strings.Join(param[1:], " "))
+				}
+			}
+		}
+		break
+	}
+
+	return nil
+}
+
 func minlength(val reflect.Value, param []string) error {
 	if param == nil && len(param) == 0 {
 		return nil
@@ -264,6 +290,7 @@ func minlength(val reflect.Value, param []string) error {
 
 	return nil
 }
+
 func maxlength(val reflect.Value, param []string) error {
 	if param == nil && len(param) == 0 {
 		return nil
