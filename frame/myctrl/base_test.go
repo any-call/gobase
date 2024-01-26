@@ -9,6 +9,9 @@ import (
 func TestGoLimiter_Begin(t *testing.T) {
 	limiter := NewGolimiter(1)
 
+	fmt.Println("test objFun is :", ObjFun(func() string {
+		return "123"
+	}))
 	go func() {
 		var i int
 		for i < 100 {

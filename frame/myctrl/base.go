@@ -29,6 +29,10 @@ func DelayExec(t time.Duration, fn func()) {
 	}
 }
 
+func ObjFun[T any](f func() T) T {
+	return f()
+}
+
 func TimerExec(t time.Duration, fn func()) {
 	if fn != nil {
 		timer := time.NewTimer(t)
