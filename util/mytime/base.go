@@ -9,8 +9,10 @@ const (
 )
 
 var (
-	CstZone  = time.FixedZone("CST", 8*3600)
-	CstSh, _ = time.LoadLocation("Asia/Shanghai") //上海
+	CstZone     = time.FixedZone("CST", 8*3600)
+	CstSh, _    = time.LoadLocation("Asia/Shanghai") //上海
+	CstLocal, _ = time.LoadLocation("Local")
+	CstUTC, _   = time.LoadLocation("UTC")
 
 	TimeTemplate1 = "2006-01-02 15:04:05"
 	TimeTemplate2 = "2006/01/02 15:04:05"
