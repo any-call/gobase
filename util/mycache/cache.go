@@ -3,7 +3,7 @@ package mycache
 import (
 	"encoding/gob"
 	"fmt"
-	"gitee.com/any-call/gobase/util/mymap"
+	"github.com/any-call/gobase/util/mymap"
 	"os"
 	"time"
 )

@@ -1,6 +1,6 @@
 package mybus
 
-import "gitee.com/any-call/gobase/util/mymap"
+import "github.com/any-call/gobase/util/mymap"
 
 // 订阅标准
 type BusSubscriber interface {

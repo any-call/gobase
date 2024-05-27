@@ -2,7 +2,7 @@ package mynet
 
 import (
 	"fmt"
-	"gitee.com/any-call/gobase/util/myos"
+	"github.com/any-call/gobase/util/myos"
 	"io"
 	"net"
 	"net/http"

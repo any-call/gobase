@@ -2,7 +2,7 @@ package mysql
 
 import (
 	"fmt"
-	"gitee.com/any-call/gobase/util/mycond"
+	"github.com/any-call/gobase/util/mycond"
 	"strings"
 )
 

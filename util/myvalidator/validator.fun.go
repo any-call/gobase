@@ -3,7 +3,7 @@ package myvalidator
 import (
 	"errors"
 	"fmt"
-	"gitee.com/any-call/gobase/util/myconv"
+	"github.com/any-call/gobase/util/myconv"
 	"reflect"
 	"strings"
 )

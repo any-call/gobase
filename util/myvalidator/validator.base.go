@@ -2,8 +2,8 @@ package myvalidator
 
 import (
 	"fmt"
-	"gitee.com/any-call/gobase/util/myconv"
-	"gitee.com/any-call/gobase/util/mystr"
+	"github.com/any-call/gobase/util/myconv"
+	"github.com/any-call/gobase/util/mystr"
 	"reflect"
 	"regexp"
 )

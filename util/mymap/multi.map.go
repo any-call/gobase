@@ -1,7 +1,7 @@
 package mymap
 
 import (
-	"gitee.com/any-call/gobase/util/mylist"
+	"github.com/any-call/gobase/util/mylist"
 	"sync"
 )
 

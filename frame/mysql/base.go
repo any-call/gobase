@@ -2,7 +2,7 @@ package mysql
 
 import (
 	"fmt"
-	"gitee.com/any-call/gobase/util/myconv"
+	"github.com/any-call/gobase/util/myconv"
 	"reflect"
 	"regexp"
 	"strings"
