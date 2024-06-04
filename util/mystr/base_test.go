@@ -29,3 +29,9 @@ func TestStyle(t *testing.T) {
 	t.Log("toPascal :", ToPascal("jin gui hua"))
 	t.Log("toHeader :", ToHeader("jin gui hua"))
 }
+
+func Test_conv(t *testing.T) {
+	//ret1,err :=HexToInt64("0xab")/
+	t.Log(HexToInt64("0x131670d1"))
+	t.Log(HexToNum[int64]("0x131670d1"))
+}
