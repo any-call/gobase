@@ -82,6 +82,18 @@ func (l *Map[K, V]) TakeAt(k K) (v V, b bool) {
 	return
 }
 
+func (l *Map[K, V]) TakeOne() (v V, b bool) {
+	l.lock.Lock()
+	defer l.lock.Unlock()
+
+	for k, v := range l.mapList {
+		delete(l.mapList, k)
+		return v, true
+	}
+
+	return
+}
+
 func (l *Map[K, V]) Value(k K) (v V, b bool) {
 	l.lock.RLock()
 	defer l.lock.RUnlock()

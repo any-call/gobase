@@ -13,18 +13,9 @@ func TestMap_Insert(t *testing.T) {
 	mymap.Insert(4, "is")
 	mymap.Insert(5, "very")
 	mymap.Insert(6, "good")
-
-	mymap.Range(func(k int, v string) {
-		t.Log(k, v)
-	})
-
-	tmpMap := make(map[int]string)
-	tmpMap[10] = "china"
-	tmpMap[11] = "chinese"
-	mymap.ResetByMap(tmpMap)
-
-	t.Log("mymap is :")
-	mymap.Range(func(k int, v string) {
-		t.Log(k, v)
-	})
+	
+	t.Log("mymap is :", mymap.mapList)
+	v, b := mymap.TakeOne()
+	t.Log("v ,b", v, b)
+	t.Log("mymap take one ", mymap.mapList)
 }
