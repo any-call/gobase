@@ -10,53 +10,49 @@ type apiGroup[TYPE any] struct {
 	groupName string
 }
 
-func NewApiGroup[DATA any](chLen uint) ApiManager[DATA] {
+func NewApiGroup[DATA any]() ApiManager[DATA] {
 	ret := &apiGroup[DATA]{}
 	ret.Map = mymap.NewMap[string, ApiInfo[DATA]]()
 	return ret
 }
 
-func (self *apiGroup[DATA]) SetGroup(group string, op DATA) ApiManager[DATA] {
+func (self *apiGroup[DATA]) SetGroup(group string) ApiManager[DATA] {
 	self.groupName = group
 	return self
 }
 
-func (self *apiGroup[DATA]) AddGET(path string, module string, op DATA) ApiManager[DATA] {
+func (self *apiGroup[DATA]) AddGET(path string, module DATA) ApiManager[DATA] {
 	self.Insert(genApiKey("GET", self.groupName+path), ApiInfo[DATA]{
 		Method: "GET",
 		Path:   self.groupName + path,
 		Module: module,
-		Type:   op,
 	})
 	return self
 }
 
-func (self *apiGroup[DATA]) AddPOST(path string, module string, op DATA) ApiManager[DATA] {
+func (self *apiGroup[DATA]) AddPOST(path string, module DATA) ApiManager[DATA] {
 	self.Insert(genApiKey("POST", self.groupName+path), ApiInfo[DATA]{
 		Method: "POST",
 		Path:   self.groupName + path,
 		Module: module,
-		Type:   op,
 	})
 	return self
 }
 
-func (self *apiGroup[DATA]) AddPUT(path string, module string, op DATA) ApiManager[DATA] {
+func (self *apiGroup[DATA]) AddPUT(path string, module DATA) ApiManager[DATA] {
 	self.Insert(genApiKey("PUT", self.groupName+path), ApiInfo[DATA]{
 		Method: "PUT",
 		Path:   self.groupName + path,
 		Module: module,
-		Type:   op,
 	})
 	return self
 }
 
-func (self *apiGroup[DATA]) AddDELETE(path string, module string, op DATA) ApiManager[DATA] {
+func (self *apiGroup[DATA]) AddDELETE(path string, module DATA) ApiManager[DATA] {
 	self.Insert(genApiKey("DELETE", self.groupName+path), ApiInfo[DATA]{
 		Method: "DELETE",
 		Path:   self.groupName + path,
 		Module: module,
-		Type:   op,
 	})
 	return self
 }

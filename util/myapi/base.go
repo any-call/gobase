@@ -4,16 +4,15 @@ type (
 	ApiInfo[TYPE any] struct {
 		Method string
 		Path   string
-		Module string
-		Type   TYPE
+		Module TYPE
 	}
 
 	ApiManager[TYPE any] interface {
-		SetGroup(group string, op TYPE) ApiManager[TYPE]
-		AddGET(path string, module string, op TYPE) ApiManager[TYPE]
-		AddPOST(path string, module string, op TYPE) ApiManager[TYPE]
-		AddPUT(path string, module string, op TYPE) ApiManager[TYPE]
-		AddDELETE(path string, module string, op TYPE) ApiManager[TYPE]
+		SetGroup(group string) ApiManager[TYPE]
+		AddGET(path string, module TYPE) ApiManager[TYPE]
+		AddPOST(path string, module TYPE) ApiManager[TYPE]
+		AddPUT(path string, module TYPE) ApiManager[TYPE]
+		AddDELETE(path string, module TYPE) ApiManager[TYPE]
 		ValueBy(method string, path string) (ApiInfo[TYPE], bool)
 		List() []ApiInfo[TYPE]
 	}
