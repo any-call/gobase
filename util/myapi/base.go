@@ -2,9 +2,9 @@ package myapi
 
 type (
 	ApiInfo[TYPE any] struct {
-		Method string
-		Path   string
-		Module TYPE
+		Method string `json:"method"`
+		Path   string `json:"path"`
+		Module TYPE   `json:"module"`
 	}
 
 	ApiManager[TYPE any] interface {
