@@ -9,6 +9,10 @@ import (
 type JsonSlice[V any] []V
 
 func (s *JsonSlice[V]) Scan(value interface{}) error {
+	if value == nil {
+		return nil
+	}
+
 	bytes, ok := value.([]byte)
 	if !ok {
 		return errors.New("type assertion to []byte failed")
