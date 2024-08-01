@@ -53,3 +53,14 @@ func TruncateSec(in time.Time) time.Time {
 func TruncateMinute(in time.Time) time.Time {
 	return in.Truncate(time.Hour)
 }
+
+func BeginningOfDay(t time.Time) time.Time {
+	year, month, day := t.Date()
+	return time.Date(year, month, day, 0, 0, 0, 0, t.Location())
+}
+
+// EndOfDay 返回指定日期的结束时间
+func EndOfDay(t time.Time) time.Time {
+	year, month, day := t.Date()
+	return time.Date(year, month, day, 23, 59, 59, 999999999, t.Location())
+}
