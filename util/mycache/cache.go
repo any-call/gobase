@@ -12,8 +12,10 @@ type cache struct {
 	items *mymap.Map[string, Item]
 }
 
-func NewCache() Cache {
-	return &cache{items: mymap.NewMap[string, Item]()}
+func NewCache(cleanupInterval time.Duration) Cache {
+	c := &cache{items: mymap.NewMap[string, Item]()}
+	go c.startGC(cleanupInterval)
+	return c
 }
 
 func (self *cache) Set(k string, v any, d time.Duration) {
@@ -127,4 +129,28 @@ func (self *cache) SaveFile(fname string) error {
 		return err
 	}
 	return fp.Close()
+}
+
+// 启用后台协程，定期清理过期项
+func (self *cache) startGC(cleanupInterval time.Duration) {
+	ticker := time.NewTicker(cleanupInterval)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ticker.C:
+			self.cleanup()
+		}
+	}
+}
+
+// 清理过期项
+func (self *cache) cleanup() {
+	keys, _ := self.items.ToArray()
+	for i, _ := range keys {
+		if obj, b := self.items.Value(keys[i]); b {
+			if obj.Expired() {
+				self.items.Remove(keys[i])
+			}
+		}
+	}
 }
