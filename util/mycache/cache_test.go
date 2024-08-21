@@ -12,7 +12,7 @@ type CacheTest struct {
 }
 
 func Test_cache(t *testing.T) {
-	c := NewCache()
+	c := NewCache(time.Minute)
 	c.Set("001", CacheTest{
 		ID:   1,
 		Name: "luis",
@@ -23,7 +23,7 @@ func Test_cache(t *testing.T) {
 		return
 	}
 
-	d := NewCache()
+	d := NewCache(time.Minute)
 	if err := d.LoadFile("my.file"); err != nil {
 		t.Error("load file err:", err)
 		return
@@ -37,7 +37,7 @@ func Test_cache(t *testing.T) {
 }
 
 func Test_cache1(t *testing.T) {
-	c := NewCache()
+	c := NewCache(time.Minute)
 	c.Set("001", CacheTest{
 		ID:   1,
 		Name: "luis",

@@ -34,7 +34,7 @@ func NewGoTimeLimiter(goNum int, t time.Duration) GoTimelimiter {
 		maxNum:    int32(goNum),
 		unitNum:   &atomic.Int32{},
 		t:         t,
-		cacheTime: mycache.NewCache()}
+		cacheTime: mycache.NewCache(time.Minute)}
 }
 
 func (self *goTimeLimiter) Begin() {
