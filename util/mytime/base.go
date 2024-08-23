@@ -72,3 +72,7 @@ func CurrBeginningOfDay() time.Time {
 func CurrEndOfDay() time.Time {
 	return EndOfDay(time.Now())
 }
+
+func UnixNano(nanoSec int64) time.Time {
+	return time.Unix(nanoSec/1_000_000_000, nanoSec%1_000_000_000)
+}
