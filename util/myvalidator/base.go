@@ -2,6 +2,9 @@ package myvalidator
 
 import (
 	"fmt"
+	"go/ast"
+	"go/parser"
+	"go/token"
 	"reflect"
 	"regexp"
 	"strings"
@@ -60,4 +63,66 @@ func CallMethod(obj any, methodName string, args ...any) ([]any, error) {
 	}
 
 	return results, nil
+}
+
+func ExportedMethodNames(obj any, isUpper bool) []string {
+	// 获取对象的类型
+	objType := reflect.TypeOf(obj)
+
+	// 列表存储方法名
+	var methodNames []string
+
+	// 遍历对象的所有方法
+	for i := 0; i < objType.NumMethod(); i++ {
+		method := objType.Method(i)
+		// 只添加导出的方法
+		if isUpper {
+			if strings.ToUpper(method.Name[:1]) == method.Name[:1] {
+				methodNames = append(methodNames, method.Name)
+			}
+		} else {
+			methodNames = append(methodNames, method.Name)
+		}
+
+	}
+
+	return methodNames
+}
+
+// 提取特定结构体的导出方法及其注释
+func ExtractMethodComments(filePath, structName string) (map[string]string, error) {
+	// 创建文件集
+	fset := token.NewFileSet()
+
+	// 解析文件
+	node, err := parser.ParseFile(fset, filePath, nil, parser.ParseComments)
+	if err != nil {
+		return nil, err
+	}
+
+	// 存储方法名及其注释
+	methods := make(map[string]string)
+
+	// 遍历 AST
+	ast.Inspect(node, func(n ast.Node) bool {
+		// 只处理函数声明
+		if fn, ok := n.(*ast.FuncDecl); ok {
+			// 检查接收者是否为目标结构体
+			if fn.Recv != nil {
+				recvType := fmt.Sprintf("%s", fn.Recv.List[0].Type)
+				recvType = strings.Trim(recvType, "*") // 移除指针符号
+				if recvType == structName && ast.IsExported(fn.Name.Name) {
+					// 提取注释
+					comment := ""
+					if fn.Doc != nil {
+						comment = strings.TrimSpace(fn.Doc.Text())
+					}
+					methods[fn.Name.Name] = comment
+				}
+			}
+		}
+		return true
+	})
+
+	return methods, nil
 }

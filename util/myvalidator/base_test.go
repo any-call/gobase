@@ -23,27 +23,18 @@ func TestValidIPV6(t *testing.T) {
 }
 
 func TestCAAInfo_Record(t *testing.T) {
-	obj := &MyStruct{}
-	list, err := CallMethod(obj, "Greet", "luis", 12)
+	ret, err := ExtractMethodComments("base_test.go", "MyStruct")
 	if err != nil {
-		t.Error("err is :", err)
+		t.Error("extracted err", err)
 		return
 	}
 
-	t.Log("result is :", list)
-
-	list, err = CallMethod(obj, "Multiply", 12, 12)
-	if err != nil {
-		t.Error("err is :", err)
-		return
-	}
-
-	t.Log("result is :", list)
+	t.Log("extracted is :", ret)
 }
 
 type MyStruct struct{}
 
-// 定义带有参数的方法
+// Greet 定义带有参数的方法
 func (m *MyStruct) Greet(name string, times int) {
 	for i := 0; i < times; i++ {
 		fmt.Printf("Hello, %s!\n", name)
