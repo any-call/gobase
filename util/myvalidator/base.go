@@ -1,6 +1,8 @@
 package myvalidator
 
 import (
+	"fmt"
+	"reflect"
 	"regexp"
 	"strings"
 )
@@ -20,4 +22,42 @@ func ValidPhone(mobileNum string) bool {
 
 	reg := regexp.MustCompile(regular)
 	return reg.MatchString(mobileNum)
+}
+
+// 基于字符串名称调用方法，并传递参数
+func CallMethod(obj any, methodName string, args ...any) ([]any, error) {
+	// 获取对象的Value
+	value := reflect.ValueOf(obj)
+
+	// 查找方法
+	method := value.MethodByName(methodName)
+	if !method.IsValid() {
+		return nil, fmt.Errorf("方法 %s 不存在", methodName)
+	}
+
+	// 准备参数
+	methodType := method.Type()
+	if len(args) != methodType.NumIn() {
+		return nil, fmt.Errorf("方法 %s 需要 %d 个参数, 但提供了 %d 个", methodName, methodType.NumIn(), len(args))
+	}
+
+	in := make([]reflect.Value, len(args))
+	for i, arg := range args {
+		// 检查参数类型是否匹配
+		if reflect.TypeOf(arg) != methodType.In(i) {
+			return nil, fmt.Errorf("参数 %d 类型不匹配：预期 %s, 得到 %s", i, methodType.In(i), reflect.TypeOf(arg))
+		}
+		in[i] = reflect.ValueOf(arg)
+	}
+
+	// 调用方法
+	resultValues := method.Call(in)
+
+	// 将结果转换为[]any类型
+	results := make([]any, len(resultValues))
+	for i, result := range resultValues {
+		results[i] = result.Interface()
+	}
+
+	return results, nil
 }
