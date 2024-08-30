@@ -23,13 +23,13 @@ func TestValidIPV6(t *testing.T) {
 }
 
 func TestCAAInfo_Record(t *testing.T) {
-	ret, err := ExtractMethodComments("base_test.go", "MyStruct")
+	ret, err := CallMethod(&MyStruct{}, "Multiply", 10, 2)
 	if err != nil {
 		t.Error("extracted err", err)
 		return
 	}
 
-	t.Log("extracted is :", ret)
+	t.Log("extracted is :", len(ret), ret[0], ret[1])
 }
 
 type MyStruct struct{}
@@ -41,6 +41,6 @@ func (m *MyStruct) Greet(name string, times int) {
 	}
 }
 
-func (m *MyStruct) Multiply(a, b int) int {
-	return a * b
+func (m *MyStruct) Multiply(a, b int) (int, error) {
+	return a * b, nil
 }
