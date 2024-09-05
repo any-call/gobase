@@ -7,7 +7,7 @@ import (
 type MyDeptID int
 
 type MyReq struct {
-	ID    int      `json:"id" validate:"min(10,不正确的ID) max(100, 不正确的ID值)"`
+	ID    int      `json:"id" validate:"gte(10,不正确的ID)"`
 	Name  string   `json:"name" validate:"len(1,用户名长度必须为1)"`
 	Sex   string   `json:"sex" validate:"enum(男|女,错误的性别)"`
 	Date  string   `json:"date" validate:"date(2006-01-02,无效的日期格式)"`
@@ -22,7 +22,7 @@ type MyDept struct {
 
 func Test_validator(t *testing.T) {
 	req := MyReq{
-		ID:   100,
+		ID:   9,
 		Name: "1",
 		Sex:  "男",
 		Date: "1979-12-20",
