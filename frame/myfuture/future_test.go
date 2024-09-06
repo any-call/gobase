@@ -1,17 +1,18 @@
 package myfuture
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 	"time"
 )
 
 func TestNewFuture(t *testing.T) {
-	Start(func() (string, error) {
+	Start(func() error {
 		time.Sleep(time.Second * 1)
-		return "ok", nil
-	}).Then(func(s string) {
-		fmt.Println("receive :", s)
+		return errors.New("this is eerr")
+	}).Then(func() {
+		fmt.Println("receive then")
 		time.Sleep(time.Second * 5)
 	}).Complete(func() {
 		fmt.Println(" run complete")

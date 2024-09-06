@@ -10,18 +10,18 @@ import (
 //○ whenComplete : 执行结束
 //○ timeout : 延时执行
 
-type future[T any] struct {
-	onThenCB   func(T)
+type future struct {
+	onThenCB   func()
 	onCatchErr func(err error)
 	onComplete func()
 }
 
-func Start[T any](f func() (T, error)) Future[T] {
+func Start(f func() error) Future {
 	if f == nil {
 		panic("empty func")
 	}
 
-	fut := &future[T]{}
+	fut := &future{}
 	go func() {
 		defer func() {
 			if r := recover(); r != nil {
@@ -36,14 +36,14 @@ func Start[T any](f func() (T, error)) Future[T] {
 			}
 		}()
 
-		retOK, retFail := f()
+		retFail := f()
 		if retFail != nil {
 			if fut.onCatchErr != nil {
 				fut.onCatchErr(retFail)
 			}
 		} else {
 			if fut.onThenCB != nil {
-				fut.onThenCB(retOK)
+				fut.onThenCB()
 			}
 		}
 
@@ -55,17 +55,17 @@ func Start[T any](f func() (T, error)) Future[T] {
 	return fut
 }
 
-func (self *future[T]) Then(f func(ret T)) Future[T] {
+func (self *future) Then(f func()) Future {
 	self.onThenCB = f
 	return self
 }
 
-func (self *future[T]) Catch(f func(error)) Future[T] {
+func (self *future) Catch(f func(error)) Future {
 	self.onCatchErr = f
 	return self
 }
 
-func (self *future[T]) Complete(f func()) Future[T] {
+func (self *future) Complete(f func()) Future {
 	self.onComplete = f
 	return self
 }
