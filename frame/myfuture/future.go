@@ -12,7 +12,7 @@ import (
 
 type future[T any] struct {
 	onThenCB   func(T)
-	onCachErr  func(err error)
+	onCatchErr func(err error)
 	onComplete func()
 }
 
@@ -26,8 +26,8 @@ func Start[T any](f func() (T, error)) Future[T] {
 		defer func() {
 			if r := recover(); r != nil {
 				//说明函数出了例外
-				if fut.onCachErr != nil {
-					fut.onCachErr(fmt.Errorf("%v", r))
+				if fut.onCatchErr != nil {
+					fut.onCatchErr(fmt.Errorf("%v", r))
 				}
 
 				if fut.onComplete != nil {
@@ -38,8 +38,8 @@ func Start[T any](f func() (T, error)) Future[T] {
 
 		retOK, retFail := f()
 		if retFail != nil {
-			if fut.onCachErr != nil {
-				fut.onCachErr(retFail)
+			if fut.onCatchErr != nil {
+				fut.onCatchErr(retFail)
 			}
 		} else {
 			if fut.onThenCB != nil {
@@ -61,7 +61,7 @@ func (self *future[T]) Then(f func(ret T)) Future[T] {
 }
 
 func (self *future[T]) Catch(f func(error)) Future[T] {
-	self.onCachErr = f
+	self.onCatchErr = f
 	return self
 }
 
