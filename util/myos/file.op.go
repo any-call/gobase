@@ -3,6 +3,7 @@ package myos
 import (
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 func IsExistPath(fPath string) bool {
@@ -79,4 +80,43 @@ func Filename(fpath string) string {
 func Dir(fpath string) string {
 	dir := filepath.Dir(fpath)
 	return dir
+}
+
+func FindFilesWithExtRecursive(dir string, extension string) ([]string, error) {
+	var files []string
+
+	// 遍历目录及子目录
+	err := filepath.WalkDir(dir, func(path string, d os.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+
+		// 检查是否为文件，并且是否匹配其中一个指定的扩展名
+		if !d.IsDir() && strings.HasSuffix(d.Name(), extension) {
+			files = append(files, path)
+		}
+
+		return nil
+	})
+
+	return files, err
+}
+
+func FindFilesWithExt(dir string, extension string) ([]string, error) {
+	var filesWithExtension []string
+
+	// 遍历文件夹
+	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		// 检查是否是文件且扩展名匹配
+		if !info.IsDir() && strings.HasSuffix(info.Name(), extension) {
+			filesWithExtension = append(filesWithExtension, path)
+		}
+		return nil
+	})
+
+	return filesWithExtension, err
 }
