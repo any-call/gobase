@@ -35,3 +35,12 @@ func Test_conv(t *testing.T) {
 	t.Log(HexToInt64("0x131670d1"))
 	t.Log(HexToNum[int64]("0x131670d1"))
 }
+
+func TestFormatToByteLength(t *testing.T) {
+	a := FormatToByteLength("jinA工艺 辰辰夺", 50, true)
+	b := FormatToByteLength("j工艺吓夺 甘地23", 50, true)
+
+	t.Log("a length :", ByteLength(a), len(a), a)
+	t.Log("b length :", ByteLength(b), len(b), b)
+
+}

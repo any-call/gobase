@@ -94,3 +94,27 @@ func CalcStrFreq(str, cond string) (n int) {
 
 	return
 }
+
+func FormatToByteLength(text string, targetBytes int, leftAlign bool) string {
+	currentBytes := len([]byte(text))
+	if currentBytes >= targetBytes {
+		return text // 如果字符串的字节长度已经大于或等于目标长度，直接返回
+	}
+
+	// 计算需要补齐的字节数
+	paddingBytes := targetBytes - currentBytes
+
+	// 构建填充字符串（使用空格来填充）
+	padding := strings.Repeat(" ", paddingBytes)
+
+	// 根据对齐方式补齐
+	if leftAlign {
+		return text + padding // 左对齐，在右侧填充
+	} else {
+		return padding + text // 右对齐，在左侧填充
+	}
+}
+
+func ByteLength(s string) int {
+	return len([]byte(s))
+}
