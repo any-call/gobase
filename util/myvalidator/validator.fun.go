@@ -34,8 +34,17 @@ func (v *ValidInfo) Valid() error {
 	case "gte":
 		return gte(v.val, v.param)
 
-	case "range":
+	case "range", "range_lr":
 		return rangeValue(v.val, v.param)
+
+	case "range_excl":
+		return rangeExclValue(v.val, v.param)
+
+	case "range_l":
+		return rangeLeftValue(v.val, v.param)
+
+	case "range_r":
+		return rangeRightValue(v.val, v.param)
 
 	case "minlength", "minlen":
 		return minlength(v.val, v.param)
@@ -247,6 +256,201 @@ func rangeValue(val reflect.Value, param []string) error {
 			}
 
 			if val.Float() < baseVal1 || val.Float() > baseVal2 {
+				return errors.New(strings.Join(param[2:], " "))
+			}
+		}
+		break
+	}
+
+	return nil
+}
+func rangeLeftValue(val reflect.Value, param []string) error {
+	if param == nil && len(param) < 2 {
+		return nil
+	}
+
+	baseStr1 := param[0]
+	baseStr2 := param[1]
+	switch val.Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		{
+			baseVal1, err := myconv.StrToNum[int64](baseStr1)
+			if err != nil {
+				return err
+			}
+
+			baseVal2, err := myconv.StrToNum[int64](baseStr2)
+			if err != nil {
+				return err
+			}
+
+			if val.Int() < baseVal1 || val.Int() >= baseVal2 {
+				return errors.New(strings.Join(param[2:], " "))
+			}
+		}
+		break
+
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		{
+			baseVal1, err := myconv.StrToNum[uint64](baseStr1)
+			if err != nil {
+				return err
+			}
+
+			baseVal2, err := myconv.StrToNum[uint64](baseStr2)
+			if err != nil {
+				return err
+			}
+
+			if val.Uint() < baseVal1 || val.Uint() >= baseVal2 {
+				return errors.New(strings.Join(param[2:], " "))
+			}
+		}
+		break
+
+	case reflect.Float32, reflect.Float64:
+		{
+			baseVal1, err := myconv.StrToNum[float64](baseStr1)
+			if err != nil {
+				return err
+			}
+
+			baseVal2, err := myconv.StrToNum[float64](baseStr2)
+			if err != nil {
+				return err
+			}
+
+			if val.Float() < baseVal1 || val.Float() >= baseVal2 {
+				return errors.New(strings.Join(param[2:], " "))
+			}
+		}
+		break
+	}
+
+	return nil
+}
+func rangeRightValue(val reflect.Value, param []string) error {
+	if param == nil && len(param) < 2 {
+		return nil
+	}
+
+	baseStr1 := param[0]
+	baseStr2 := param[1]
+	switch val.Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		{
+			baseVal1, err := myconv.StrToNum[int64](baseStr1)
+			if err != nil {
+				return err
+			}
+
+			baseVal2, err := myconv.StrToNum[int64](baseStr2)
+			if err != nil {
+				return err
+			}
+
+			if val.Int() <= baseVal1 || val.Int() > baseVal2 {
+				return errors.New(strings.Join(param[2:], " "))
+			}
+		}
+		break
+
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		{
+			baseVal1, err := myconv.StrToNum[uint64](baseStr1)
+			if err != nil {
+				return err
+			}
+
+			baseVal2, err := myconv.StrToNum[uint64](baseStr2)
+			if err != nil {
+				return err
+			}
+
+			if val.Uint() <= baseVal1 || val.Uint() > baseVal2 {
+				return errors.New(strings.Join(param[2:], " "))
+			}
+		}
+		break
+
+	case reflect.Float32, reflect.Float64:
+		{
+			baseVal1, err := myconv.StrToNum[float64](baseStr1)
+			if err != nil {
+				return err
+			}
+
+			baseVal2, err := myconv.StrToNum[float64](baseStr2)
+			if err != nil {
+				return err
+			}
+
+			if val.Float() <= baseVal1 || val.Float() > baseVal2 {
+				return errors.New(strings.Join(param[2:], " "))
+			}
+		}
+		break
+	}
+
+	return nil
+}
+func rangeExclValue(val reflect.Value, param []string) error {
+	if param == nil && len(param) < 2 {
+		return nil
+	}
+
+	baseStr1 := param[0]
+	baseStr2 := param[1]
+	switch val.Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		{
+			baseVal1, err := myconv.StrToNum[int64](baseStr1)
+			if err != nil {
+				return err
+			}
+
+			baseVal2, err := myconv.StrToNum[int64](baseStr2)
+			if err != nil {
+				return err
+			}
+
+			if val.Int() <= baseVal1 || val.Int() >= baseVal2 {
+				return errors.New(strings.Join(param[2:], " "))
+			}
+		}
+		break
+
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		{
+			baseVal1, err := myconv.StrToNum[uint64](baseStr1)
+			if err != nil {
+				return err
+			}
+
+			baseVal2, err := myconv.StrToNum[uint64](baseStr2)
+			if err != nil {
+				return err
+			}
+
+			if val.Uint() <= baseVal1 || val.Uint() >= baseVal2 {
+				return errors.New(strings.Join(param[2:], " "))
+			}
+		}
+		break
+
+	case reflect.Float32, reflect.Float64:
+		{
+			baseVal1, err := myconv.StrToNum[float64](baseStr1)
+			if err != nil {
+				return err
+			}
+
+			baseVal2, err := myconv.StrToNum[float64](baseStr2)
+			if err != nil {
+				return err
+			}
+
+			if val.Float() <= baseVal1 || val.Float() >= baseVal2 {
 				return errors.New(strings.Join(param[2:], " "))
 			}
 		}
