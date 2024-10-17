@@ -57,3 +57,9 @@ func Test_StructToMap(t *testing.T) {
 
 	t.Log("map:", info)
 }
+
+func Test_trimFloat(t *testing.T) {
+	t.Log(TrimFloat(12.001))
+	t.Log(TrimFloat(12.00))
+	t.Log(TrimFloat(12.120))
+}

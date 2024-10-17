@@ -287,3 +287,7 @@ func StrToNum[T int | int8 | int16 | int32 | int64 | uint | uint8 | uint16 | uin
 
 	return ret, nil
 }
+
+func TrimFloat[T float32 | float64](num T) string {
+	return strconv.FormatFloat(float64(num), 'f', -1, 64)
+}
