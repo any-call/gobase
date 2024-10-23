@@ -122,7 +122,7 @@ func authenticate(rw io.ReadWriter, validfn func(username, password string) bool
 		return false
 	}
 
-	if buf[0] != 0x01 { // 用户名/密码认证协议的版本号 是 1，这属于 SOCKS5 协议内的一个子协议（用于处理用户名/密码的认证机制）。
+	if buf[0] != 0x01 { //这属于 SOCKS5 协议内的一个子协议（用于处理用户名/密码的认证机制）。
 		return false
 	}
 
