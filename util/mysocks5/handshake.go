@@ -1,6 +1,9 @@
 package mysocks5
 
 import (
+	"fmt"
+	"github.com/any-call/gobase/frame/myctrl"
+	"github.com/any-call/gobase/util/mylog"
 	"io"
 	"net"
 )
@@ -11,7 +14,7 @@ const (
 )
 
 // Handshake fast-tracks SOCKS initialization to get target address to connect.
-func Handshake(rw io.ReadWriter) (Addr, error) {
+func Handshake(rw io.ReadWriter, authFn func(username, password string) bool) (Addr, error) {
 	// Read RFC 1928 section 4 for request and reply structure and sizes
 	buf := make([]byte, MaxReqLen)
 
@@ -22,9 +25,20 @@ func Handshake(rw io.ReadWriter) (Addr, error) {
 
 	if n1 >= 3 {
 		if buf[0] == Version5 { //说明支持socks5
-			_, err = rw.Write([]byte{Version5, MethodNoAuth}) // SOCKS v5, no account required
+			_, err = rw.Write([]byte{Version5, myctrl.ObjFun(func() byte {
+				if authFn != nil {
+					return MethodAuth
+				}
+				return MethodNoAuth
+			})}) // SOCKS v5, no account required
 			if err != nil {
 				return nil, err
+			}
+
+			if authFn != nil {
+				if !authenticate(rw, authFn) {
+					return nil, fmt.Errorf("auth fail")
+				}
 			}
 
 			n, err := rw.Read(buf) // SOCKS request: VER, CMD, RSV, Addr
@@ -93,3 +107,65 @@ func Handshake(rw io.ReadWriter) (Addr, error) {
 //+----+-----+-------+------+----------+----------+
 //| 1  |  1  | X'00' |  1   | Variable |    2     |
 //+----+-----+-------+------+----------+----------+
+
+// 处理客户端认证请求
+func authenticate(rw io.ReadWriter, validfn func(username, password string) bool) bool {
+	buf := make([]byte, MaxAddrLen)
+	n1, err := rw.Read(buf)
+	if err != nil {
+		mylog.Debug("authenticate read err:", err, n1)
+		return false
+	}
+
+	mylog.Info("authenticate read data :", buf[:n1])
+	if n1 < 4 { //长度不足
+		return false
+	}
+
+	if buf[0] != 0x01 { // 用户名/密码认证协议的版本号 是 1，这属于 SOCKS5 协议内的一个子协议（用于处理用户名/密码的认证机制）。
+		return false
+	}
+
+	//用户名长度
+	uLen := int(buf[1])
+	if n1 < (uLen + 3) {
+		return false //用户名长度不足
+	}
+	pLen := int(buf[uLen+2])
+	if n1 < (uLen + pLen + 3) {
+		return false //密码不足
+	}
+
+	uname := string(buf[2 : uLen+2])
+	passwd := string(buf[uLen+3 : uLen+3+pLen])
+
+	if validfn == nil || validfn(string(uname), string(passwd)) {
+		_, _ = rw.Write([]byte{0x01, 0x00}) // 验证成功
+		return true
+	}
+
+	_, _ = rw.Write([]byte{0x01, 0x01}) // 验证失败
+	return false
+}
+
+//客户端发起认证请求
+//+----+------+----------+----------+
+//|VER | ULEN |  UNAME   | PLEN     |
+//+----+------+----------+----------+
+//| 1  |  1   | 1 to 255 | 1 to 255 |
+//+----+------+----------+----------+
+//VER：认证协议的版本号
+//ULEN：用户名长度（1字节）。
+//UNAME：用户名（ULEN 长度）。
+//PLEN：密码长度（1字节）。
+//PASSWD：密码（PLEN 长度）。
+
+//服务端响应认证
+//+----+--------+
+//|VER | STATUS |
+//+----+--------+
+//| 1  |   1    |
+//+----+--------+
+//STATUS：
+//•	0x00 表示成功。
+//•	0x01 表示失败。
