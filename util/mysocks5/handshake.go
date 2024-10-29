@@ -155,7 +155,7 @@ func ConnToSocks5(addr Addr, remoteAddr string, authfn func() (userName, passwor
 			return nil, fmt.Errorf("SOCKS5 需求用户密码认证")
 		}
 		username, password := authfn()
-		mylog.Debug("用户名:", username, ";password:", password)
+		//mylog.Debug("用户名:", username, ";password:", password)
 		// 发送用户名/密码认证信息
 		auth := make([]byte, 3+len(username)+len(password))
 		auth[0] = 0x01                              // 认证版本
