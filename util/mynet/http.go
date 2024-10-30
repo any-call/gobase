@@ -3,6 +3,7 @@ package mynet
 import (
 	"bytes"
 	"crypto/tls"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -168,4 +169,35 @@ func PostForm(url string, values url.Values, timeout time.Duration, parseCb Pars
 		}
 		return isTls, tout, nil
 	}, parseCb, client)
+}
+
+func ValidProxyInfo(r *http.Request, authFn func(username, password string) bool) bool {
+	auth := r.Header.Get("Proxy-Authorization")
+	if auth == "" {
+		return false
+	}
+
+	// 解析 Basic Auth 头
+	const prefix = "Basic "
+	if !strings.HasPrefix(auth, prefix) {
+		return false
+	}
+
+	// 解码认证信息
+	payload, err := base64.StdEncoding.DecodeString(auth[len(prefix):])
+	if err != nil {
+		return false
+	}
+
+	// 验证用户名和密码
+	pair := strings.SplitN(string(payload), ":", 2)
+	if len(pair) != 2 {
+		return false
+	}
+
+	if authFn == nil {
+		return true
+	}
+
+	return authFn(pair[0], pair[1])
 }

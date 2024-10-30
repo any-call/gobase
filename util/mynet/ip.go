@@ -194,3 +194,18 @@ func checkIP(ip string) (uint32, error) {
 	// convert the ip to integer
 	return val, nil
 }
+
+func GetIPFromConn(conn net.Conn) string {
+	// 获取远程地址
+	remoteAddr := conn.RemoteAddr()
+
+	// 将地址转换为 *net.TCPAddr 或 *net.UDPAddr
+	if tcpAddr, ok := remoteAddr.(*net.TCPAddr); ok {
+		return tcpAddr.IP.String()
+	}
+	if udpAddr, ok := remoteAddr.(*net.UDPAddr); ok {
+		return udpAddr.IP.String()
+	}
+
+	return "" // 如果无法转换，返回空字符串
+}
