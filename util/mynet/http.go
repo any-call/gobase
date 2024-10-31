@@ -174,25 +174,37 @@ func PostForm(url string, values url.Values, timeout time.Duration, parseCb Pars
 func ValidProxyInfo(r *http.Request, authFn func(username, password string) bool) bool {
 	auth := r.Header.Get("Proxy-Authorization")
 	if auth == "" {
-		return false
+		if authFn == nil {
+			return true
+		}
+		return authFn("", "")
 	}
 
 	// 解析 Basic Auth 头
 	const prefix = "Basic "
 	if !strings.HasPrefix(auth, prefix) {
-		return false
+		if authFn == nil {
+			return true
+		}
+		return authFn("", "")
 	}
 
 	// 解码认证信息
 	payload, err := base64.StdEncoding.DecodeString(auth[len(prefix):])
 	if err != nil {
-		return false
+		if authFn == nil {
+			return true
+		}
+		return authFn("", "")
 	}
 
 	// 验证用户名和密码
 	pair := strings.SplitN(string(payload), ":", 2)
 	if len(pair) != 2 {
-		return false
+		if authFn == nil {
+			return true
+		}
+		return authFn("", "")
 	}
 
 	if authFn == nil {

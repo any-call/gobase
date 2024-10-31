@@ -230,6 +230,14 @@ func authenticate(rw io.ReadWriter, validfn func(username, password string) bool
 
 	mylog.Info("authenticate read data :", buf[:n1])
 	if n1 < 4 { //长度不足
+		if n1 == 3 && buf[0] == 0x01 && buf[1] == 0x00 && buf[2] == 0x00 { //没有用户/密码
+			if validfn == nil {
+				return true
+			}
+
+			return validfn("", "")
+		}
+
 		return false
 	}
 
