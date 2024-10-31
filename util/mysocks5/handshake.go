@@ -232,10 +232,17 @@ func authenticate(rw io.ReadWriter, validfn func(username, password string) bool
 	if n1 < 4 { //长度不足
 		if n1 == 3 && buf[0] == 0x01 && buf[1] == 0x00 && buf[2] == 0x00 { //没有用户/密码
 			if validfn == nil {
+				_, _ = rw.Write([]byte{0x01, 0x00})
 				return true
 			}
 
-			return validfn("", "")
+			if validfn("", "") {
+				_, _ = rw.Write([]byte{0x01, 0x00})
+				return true
+			} else {
+				_, _ = rw.Write([]byte{0x01, 0x01})
+				return false
+			}
 		}
 
 		return false
