@@ -3,7 +3,7 @@ package myos
 import "testing"
 
 func TestGetFontPath(t *testing.T) {
-	ret, err := GetFontPath()
+	ret, err := GetSystemFontPath()
 	if err != nil {
 		t.Error(err)
 		return
