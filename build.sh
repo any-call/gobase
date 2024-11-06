@@ -21,4 +21,12 @@ go build --buildmode=c-shared -o ../convert_gui/library/json_to_model.so main.go
 docker run --rm -v $(pwd):/app -w /app golang:latest go build
 /app：容器内的目录，可以固定写这个即可
 -w :指定当前 工作目录
+
+##如下是需要安装依赖的编译
+#docker run --rm -v $(pwd):/app golang:latest bash -c "
+#    apt-get update &&
+#    apt-get install -y libleptonica-dev tesseract-ocr pkg-config build-essential &&
+#    go build ./cmd/client
+#"
+
 #Dockerfile 是一个golang 容器镜像
