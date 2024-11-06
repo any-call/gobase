@@ -16,3 +16,6 @@ go build --buildmode=c-shared -o ../convert_gui/library/json_to_model.so main.go
 
 
 还有编译为 Android :  https://blog.csdn.net/HeroRazor/article/details/121436261
+
+##docker 容器编译，可用于依赖不同环境的编译 。
+docker run --rm -v $(pwd):/go/src/myapp golang:latest go build
