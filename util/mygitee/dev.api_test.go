@@ -6,12 +6,14 @@ import (
 )
 
 func TestGiteeDev_ListTags(t *testing.T) {
-	list, err := NewDevApi(os.Getenv("TOKEN")).
-		ListTags("xingyun2024", "ip_node_service_program", 1)
+	err := NewDevApi(os.Getenv("TOKEN")).GetZipFile("jinguihua",
+		"botApi",
+		"v1.0.0",
+		"/Users/luisjin/Desktop/temp/1.zip")
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	t.Log("list is :", list)
+	t.Log("get ok")
 }

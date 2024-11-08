@@ -3,10 +3,6 @@ package mygitee
 import "time"
 
 type (
-	ErrMsg struct {
-		Messages []string `json:"messages"`
-	}
-
 	TagInfo struct {
 		Name    string `json:"name"`
 		Message string `json:"message"`

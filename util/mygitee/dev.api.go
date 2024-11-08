@@ -4,11 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/any-call/gobase/util/mylog"
 	"github.com/any-call/gobase/util/mynet"
 	"net/http"
 	"net/url"
-	"strings"
+	"os"
 	"time"
 )
 
@@ -33,15 +32,9 @@ func (self *developerApi) ListTags(owner string, repo string, page int) (list []
 
 	if err = mynet.GetQuery(urlStr, param, time.Second*10, func(ret []byte, httpCode int) error {
 		if httpCode != http.StatusOK {
-			tmpErr := ErrMsg{}
-			_ = json.Unmarshal(ret, &tmpErr)
-			if tmpErr.Messages == nil || len(tmpErr.Messages) == 0 {
-				return errors.New(string(ret))
-			}
-			return errors.New(strings.Join(tmpErr.Messages, ";"))
+			return errors.New(string(ret))
 		}
 
-		mylog.Debug("ret is :", string(ret))
 		if err = json.Unmarshal(ret, &list); err != nil {
 			return err
 		}
@@ -51,4 +44,21 @@ func (self *developerApi) ListTags(owner string, repo string, page int) (list []
 	}
 
 	return list, nil
+}
+
+func (self *developerApi) GetZipFile(owner string, repo string, tagName string, zipFilePath string) error {
+	urlStr := fmt.Sprintf("https://gitee.com/api/v5/repos/%s/%s/zipball", owner, repo)
+	param := url.Values{}
+	param.Add("access_token", self.token)
+	if len(tagName) > 0 {
+		param.Add("ref", tagName)
+	}
+
+	return mynet.GetQuery(urlStr, param, time.Second*10, func(ret []byte, httpCode int) error {
+		if httpCode != http.StatusOK {
+			return errors.New(string(ret))
+		}
+
+		return os.WriteFile(zipFilePath, ret, 0644)
+	}, nil)
 }
