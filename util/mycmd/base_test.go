@@ -1,9 +1,13 @@
 package mycmd
 
-import "testing"
+import (
+	"os/exec"
+	"testing"
+)
 
 func TestCombinedOutput(t *testing.T) {
-	if output, err := Execbash("docker images"); err != nil {
+	if output, err := Execbash("docker images", func(c *exec.Cmd) {
+	}); err != nil {
 		t.Error("err is :", err)
 	} else {
 		t.Log("output is :\n", output)
