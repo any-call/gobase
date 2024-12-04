@@ -173,6 +173,19 @@ func (l *Map[K, V]) Search(f func(key K, value V) bool) {
 end:
 }
 
+func (l *Map[K, V]) FilterMap(f func(key K, value V) bool) *Map[K, V] {
+	l.lock.RLock()
+	defer l.lock.RUnlock()
+
+	ret := NewMap[K, V]()
+	for i, v := range l.mapList {
+		if b := f(i, v); b {
+			ret.Insert(i, v)
+		}
+	}
+	return ret
+}
+
 func (l *Map[K, V]) Len() int {
 	l.lock.RLock()
 	defer l.lock.RUnlock()
