@@ -20,7 +20,11 @@ func NewXDBSearcher(filePath string) (ret *XDBSearcher, err error) {
 		return nil, err
 	}
 
-	searcher, err := NewWithBuffer(content)
+	return NewXDBSearcherWithByes(content)
+}
+
+func NewXDBSearcherWithByes(datas []byte) (ret *XDBSearcher, err error) {
+	searcher, err := NewWithBuffer(datas)
 	if err != nil {
 		return nil, err
 	}
