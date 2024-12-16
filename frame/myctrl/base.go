@@ -40,8 +40,8 @@ func TimerExec(t time.Duration, fn func()) {
 		for {
 			select {
 			case <-timer.C:
-				timer.Reset(t)
 				fn()
+				timer.Reset(t)
 				break
 			}
 		}
