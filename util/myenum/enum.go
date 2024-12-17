@@ -16,3 +16,7 @@ func (self *enum[V]) Name() string {
 func (self *enum[V]) Value() V {
 	return self.value
 }
+
+func (self *enum[V]) SetValue(value V) {
+	self.value = value
+}
