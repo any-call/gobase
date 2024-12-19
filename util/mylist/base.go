@@ -1,5 +1,12 @@
 package mylist
 
+func Prepend[E any](slice []E, element E) []E {
+	if slice == nil {
+		return []E{element}
+	}
+	return append([]E{element}, slice...)
+}
+
 // 求并集
 func Union[E comparable](slice1, slice2 []E) []E {
 	m := make(map[E]int)
