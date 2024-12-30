@@ -47,3 +47,15 @@ func TimerExec(t time.Duration, fn func()) {
 		}
 	}
 }
+
+func WaitForSignal[T any](timeout time.Duration, signal <-chan T) (T, bool) {
+	select {
+	case data := <-signal:
+		// 收到信号
+		return data, true
+	case <-time.After(timeout):
+		// 超时
+		var zero T
+		return zero, false
+	}
+}

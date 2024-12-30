@@ -64,3 +64,13 @@ func Test_TimeExec(t *testing.T) {
 
 	time.Sleep(time.Minute)
 }
+
+func TestWaitForSignal(t *testing.T) {
+	signal := make(chan struct{})
+	s, b := WaitForSignal(time.Second*10, signal)
+	if b {
+		t.Log("received signal", s)
+	} else {
+		t.Log("receive timeout")
+	}
+}
