@@ -1,9 +1,12 @@
 package myos
 
 import (
+	"fmt"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 func IsExistPath(fPath string) bool {
@@ -38,6 +41,32 @@ func IsExistFile(fPath string) bool {
 	}
 
 	return true
+}
+
+func IsExistUrlFile(url string) (bool, error) {
+	client := &http.Client{Timeout: 10 * time.Second}
+	req, err := http.NewRequest("HEAD", url, nil)
+	if err != nil {
+		return false, err
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return false, err
+	}
+
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+
+	// Check the HTTP status code
+	if resp.StatusCode == http.StatusOK {
+		return true, nil
+	} else if resp.StatusCode == http.StatusNotFound {
+		return false, nil
+	}
+
+	return false, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 }
 
 func Remove(fpath string) error {
