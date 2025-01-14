@@ -223,14 +223,8 @@ func ConnToSocks5(addr Addr, remoteAddr string, authfn func() (userName, passwor
 func authenticate(rw io.ReadWriter, validfn func(username, password string) bool) bool {
 	buf := make([]byte, MaxAddrLen)
 	n1, err := rw.Read(buf)
-	if err != nil { //指纹浏览器 没有用户名/密码 ：
+	if err != nil {
 		mylog.Debug("authenticate read err:", err, n1)
-		if validfn == nil || validfn("", "") {
-			_, _ = rw.Write([]byte{0x01, 0x00}) // 验证成功
-			return true
-		}
-
-		_, _ = rw.Write([]byte{0x01, 0x01})
 		return false
 	}
 
