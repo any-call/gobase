@@ -11,7 +11,7 @@ func DockerExecCmd(containerName string) []string {
 	return []string{"docker", "exec", containerName}
 }
 
-func BackupMySQL(dbUser, dbPassword, dbName, backupPath string, cmdModifier func() []string) error {
+func BackupMySQL(dbUser, dbPassword, dbName, backupPath string, cmdModifier func() []string) (fullFile string, err error) {
 	timestamp := time.Now().Format("20060102_150405")
 	fileName := fmt.Sprintf("%s/%s_%s.sql", backupPath, dbName, timestamp)
 
@@ -33,7 +33,7 @@ func BackupMySQL(dbUser, dbPassword, dbName, backupPath string, cmdModifier func
 	// 创建输出文件
 	outFile, err := os.Create(fileName)
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer func() {
 		_ = outFile.Close()
@@ -44,8 +44,8 @@ func BackupMySQL(dbUser, dbPassword, dbName, backupPath string, cmdModifier func
 
 	// 执行命令
 	if err := cmd.Run(); err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	return fileName, nil
 }
