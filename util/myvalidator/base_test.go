@@ -22,6 +22,10 @@ func TestValidIPV6(t *testing.T) {
 	t.Log("soa:", b)
 }
 
+func TestIsFixedLengthDigits(t *testing.T) {
+	t.Log(IsFixedLengthDigits("986756", 6))
+}
+
 func TestCAAInfo_Record(t *testing.T) {
 	ret, err := CallMethod(&MyStruct{}, "Multiply", 10, 2)
 	if err != nil {
