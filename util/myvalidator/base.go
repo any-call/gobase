@@ -27,6 +27,11 @@ func ValidPhone(mobileNum string) bool {
 	return reg.MatchString(mobileNum)
 }
 
+func IsFixedLengthDigits(s string, len int) bool {
+	re := regexp.MustCompile(fmt.Sprintf(`^\d{%d}$`, len)) // ^\d{6}$ 匹配 字符串是指定长度的的数据
+	return re.MatchString(s)
+}
+
 // 基于字符串名称调用方法，并传递参数
 func CallMethod(obj any, methodName string, args ...any) ([]any, error) {
 	// 获取对象的Value
