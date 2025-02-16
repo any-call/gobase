@@ -59,10 +59,20 @@ func BeginningOfDay(t time.Time) time.Time {
 	return time.Date(year, month, day, 0, 0, 0, 0, t.Location())
 }
 
+func BeginningOfDayByLocation(t time.Time, location *time.Location) time.Time {
+	year, month, day := t.Date()
+	return time.Date(year, month, day, 0, 0, 0, 0, location)
+}
+
 // EndOfDay 返回指定日期的结束时间
 func EndOfDay(t time.Time) time.Time {
 	year, month, day := t.Date()
 	return time.Date(year, month, day, 23, 59, 59, 999999999, t.Location())
+}
+
+func EndOfDayByLocation(t time.Time, location *time.Location) time.Time {
+	year, month, day := t.Date()
+	return time.Date(year, month, day, 23, 59, 59, 999999999, location)
 }
 
 func CurrBeginningOfDay() time.Time {
