@@ -1,6 +1,7 @@
 package myctrl
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -58,4 +59,27 @@ func WaitForSignal[T any](timeout time.Duration, signal <-chan T) (T, bool) {
 		var zero T
 		return zero, false
 	}
+}
+
+// RetryFunction 是需要执行的函数，返回 error
+type RetryFunction func() error
+
+// Retry 执行指定的函数，失败后按指定次数和时间间隔重试
+func Retry(fn RetryFunction, retries int, timeout time.Duration) error {
+	if fn == nil {
+		return nil
+	}
+	if retries <= 0 {
+		retries = 1
+	}
+
+	var err error
+	for i := 0; i < retries; i++ {
+		if err = fn(); err == nil {
+			return nil // 成功，直接返回
+		}
+		fmt.Printf("第 %d 次尝试失败: %v，等待 %v 后重试...\n", i+1, err, timeout)
+		time.Sleep(timeout) // 等待后重试
+	}
+	return fmt.Errorf("执行失败，重试 %d 次后仍然出错: %w", retries, err)
 }
