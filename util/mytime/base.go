@@ -60,7 +60,7 @@ func BeginningOfDay(t time.Time) time.Time {
 }
 
 func BeginningOfDayByLocation(t time.Time, location *time.Location) time.Time {
-	year, month, day := t.Date()
+	year, month, day := t.In(location).Date()
 	return time.Date(year, month, day, 0, 0, 0, 0, location)
 }
 
@@ -71,7 +71,7 @@ func EndOfDay(t time.Time) time.Time {
 }
 
 func EndOfDayByLocation(t time.Time, location *time.Location) time.Time {
-	year, month, day := t.Date()
+	year, month, day := t.In(location).Date()
 	return time.Date(year, month, day, 23, 59, 59, 999999999, location)
 }
 
