@@ -83,3 +83,21 @@ func Retry(fn RetryFunction, retries int, timeout time.Duration) error {
 	}
 	return fmt.Errorf("执行失败，重试 %d 次后仍然出错: %w", retries, err)
 }
+
+func WaitForCondition(checkFunc func() bool, interval time.Duration) {
+	if checkFunc == nil {
+		return
+	}
+
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			if checkFunc() {
+				return
+			}
+		}
+	}
+}
