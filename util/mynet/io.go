@@ -1,8 +1,10 @@
 package mynet
 
 import (
+	"context"
 	"github.com/any-call/gobase/util/mylog"
 	"io"
+	"time"
 )
 
 type (
@@ -52,4 +54,49 @@ func Relay(left, right io.ReadWriter) (int64, int64, error) {
 	}
 
 	return down_n, rs.N, err
+}
+
+func RelayWithTimeout(left, right io.ReadWriter, timeout time.Duration) (int64, int64, error) {
+	type res struct {
+		N   int64
+		Err error
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	upCh := make(chan res, 1)
+	downCh := make(chan res, 1)
+
+	// 开始双向拷贝
+	go func() {
+		up_n, err := copyHalfClose(right, left)
+		upCh <- res{up_n, err}
+		close(upCh)
+	}()
+
+	go func() {
+		down_n, err := copyHalfClose(left, right)
+		downCh <- res{down_n, err}
+		close(downCh)
+	}()
+
+	var upRes, downRes res
+	for i := 0; i < 2; i++ {
+		select {
+		case upRes = <-upCh:
+		case downRes = <-downCh:
+		case <-ctx.Done():
+			return downRes.N, upRes.N, ctx.Err()
+		}
+	}
+
+	if upRes.Err != nil {
+		return downRes.N, upRes.N, upRes.Err
+	}
+	if downRes.Err != nil {
+		return downRes.N, upRes.N, downRes.Err
+	}
+
+	return downRes.N, upRes.N, nil
 }
