@@ -118,3 +118,14 @@ func FormatToByteLength(text string, targetBytes int, leftAlign bool) string {
 func ByteLength(s string) int {
 	return len([]byte(s))
 }
+
+// TruncateString 截断字符串，保留前后指定长度，中间用省略字符串代替
+func TruncateString(input string, frontLen, backLen int, ellipsis string) string {
+	if len(input) <= frontLen+backLen {
+		return input
+	}
+
+	front := input[:frontLen]
+	back := input[len(input)-backLen:]
+	return front + ellipsis + back
+}
