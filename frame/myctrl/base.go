@@ -49,6 +49,37 @@ func TimerExec(t time.Duration, fn func()) {
 	}
 }
 
+func TimerExecWithControl(
+	initialInterval time.Duration,
+	getNextInterval func() time.Duration,
+	task func(),
+	stopChan chan struct{},
+) {
+	if task == nil || getNextInterval == nil {
+		return
+	}
+
+	ticker := time.NewTicker(initialInterval)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			task() // 执行任务
+			// 重新获取下次执行间隔
+			nextInterval := getNextInterval()
+			if nextInterval <= 0 {
+				nextInterval = initialInterval
+			}
+			ticker.Reset(nextInterval)
+			break
+
+		case <-stopChan:
+			return
+		}
+	}
+}
+
 func WaitForSignal[T any](timeout time.Duration, signal <-chan T) (T, bool) {
 	select {
 	case data := <-signal:
