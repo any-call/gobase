@@ -17,10 +17,10 @@ func TestSend(t *testing.T) {
 </html>
 `
 
-	err := SendByGmail("luis.giga11@gmail.com",
-		"uhrq cogt ulzi nqun",
+	err := SendByGmail("", "serverbp001@gmail.com",
+		"",
 		"156711203@qq.com",
-		"register code", content, nil, false)
+		"register code11", content, nil, false)
 	if err != nil {
 		t.Error(err)
 		return

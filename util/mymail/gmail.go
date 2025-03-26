@@ -10,7 +10,7 @@ type (
 	ReqSmtpServer func() (smtpHost string, smtpPort int)
 )
 
-func SendByGmail(fromMail, fromPass, toMail, title, content string, smtpCb ReqSmtpServer, isHTML bool) error {
+func SendByGmail(fromAlias, fromMail, fromPass, toMail, title, content string, smtpCb ReqSmtpServer, isHTML bool) error {
 	smtpHost := "smtp.gmail.com"
 	smtpPort := 587
 	if smtpCb != nil {
@@ -26,12 +26,23 @@ func SendByGmail(fromMail, fromPass, toMail, title, content string, smtpCb ReqSm
 		mimeType = "text/html"
 	}
 
-	message := []byte(fmt.Sprintf("To: %s\r\n"+
-		"Subject: %s\r\n"+
-		"MIME-Version: 1.0\r\n"+
-		"Content-Type: %s; charset=\"UTF-8\"\r\n"+
-		"\r\n"+
-		"%s\r\n", toMail, title, mimeType, content)) // your message
+	var message []byte
+	if fromAlias != "" { //存在发邮件的别名
+		message = []byte(fmt.Sprintf("To: %s\r\n"+
+			fmt.Sprintf("From: \"%s\" <%s>\r\n", fromAlias, fromMail)+
+			"Subject: %s\r\n"+
+			"MIME-Version: 1.0\r\n"+
+			"Content-Type: %s; charset=\"UTF-8\"\r\n"+
+			"\r\n"+
+			"%s\r\n", toMail, title, mimeType, content)) // your message
+	} else {
+		message = []byte(fmt.Sprintf("To: %s\r\n"+
+			"Subject: %s\r\n"+
+			"MIME-Version: 1.0\r\n"+
+			"Content-Type: %s; charset=\"UTF-8\"\r\n"+
+			"\r\n"+
+			"%s\r\n", toMail, title, mimeType, content)) // your message
+	}
 
 	// send out the email
 	if err := smtp.SendMail(smtpHost+":"+strconv.Itoa(smtpPort), //convert port number from int to string
