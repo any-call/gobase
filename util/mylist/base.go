@@ -69,6 +69,13 @@ func DelItem[E comparable](list []E, delE E) []E {
 	return list
 }
 
+func DelItemAtIndex[E comparable](list []E, index int) []E {
+	if index < 0 || index >= len(list) {
+		return list // 下标无效，返回原切片
+	}
+	return append(list[:index], list[index+1:]...)
+}
+
 // 检测数组中是否存在该元素
 func IsExistItem[E comparable](list []E, ele E) bool {
 	for i := 0; i < len(list); i++ {
