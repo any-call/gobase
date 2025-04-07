@@ -104,6 +104,24 @@ func RemoveDuplicItem[E comparable](list []E) []E {
 	return ret
 }
 
+func RemoveDupKey[T any, K comparable](items []T, keyFn func(item T) K) []T {
+	if keyFn == nil {
+		return items
+	}
+
+	result := make([]T, 0, len(items))
+	seen := make(map[K]struct{})
+
+	for _, item := range items {
+		k := keyFn(item)
+		if _, ok := seen[k]; !ok {
+			seen[k] = struct{}{}
+			result = append(result, item)
+		}
+	}
+	return result
+}
+
 // a list to b list
 func ToList[F, T any](org *List[F], f func(o F) T) *List[T] {
 	ret := NewList[T]()
