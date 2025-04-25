@@ -2,6 +2,7 @@ package mylog
 
 import (
 	"io"
+	"os"
 	"sync"
 	"unsafe"
 )
@@ -101,6 +102,17 @@ func StdLogger() *logger {
 
 func SetOptions(opts ...Option) {
 	std.SetOptions(opts...)
+}
+
+func GenFileByFilePath(fullPathFile string) (*os.File, error) {
+	_, err := os.Stat(fullPathFile)
+	if err != nil {
+		if err := os.MkdirAll(fullPathFile, os.ModePerm); err != nil {
+			return nil, err
+		}
+	}
+
+	return os.OpenFile(fullPathFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 }
 
 func InitDebugLevel(en bool) *logger {
