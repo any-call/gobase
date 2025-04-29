@@ -1,3 +1,5 @@
+//go:build darwin
+
 package myos
 
 import (
@@ -9,16 +11,6 @@ import (
 
 func GetDeviceIdentifier() (string, error) {
 	switch runtime.GOOS {
-	case "windows":
-		cmd := exec.Command("wmic", "csproduct", "get", "UUID")
-		output, err := cmd.Output()
-		if err != nil {
-			return "", err
-		}
-		lines := strings.Split(string(output), "\n")
-		if len(lines) > 1 {
-			return strings.TrimSpace(lines[1]), nil
-		}
 	case "darwin":
 		cmd := exec.Command("ioreg", "-rd1", "-c", "IOPlatformExpertDevice")
 		output, err := cmd.Output()
