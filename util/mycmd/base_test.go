@@ -7,7 +7,7 @@ import (
 
 func TestCombinedOutput(t *testing.T) {
 	if output, err := Execbash("docker images", func(c *exec.Cmd) {
-	}); err != nil {
+	}, true); err != nil {
 		t.Error("err is :", err)
 	} else {
 		t.Log("output is :\n", output)
