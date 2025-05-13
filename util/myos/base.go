@@ -30,6 +30,14 @@ func IsLinux() bool {
 	return runtime.GOOS == "linux"
 }
 
+func IsAndroid() bool {
+	return runtime.GOOS == "android"
+}
+
+func IsIos() bool {
+	return runtime.GOOS == "ios"
+}
+
 // IsSupportColor checks current console whether supports color.
 // Supported: linux, mac, or windows's ConEmu, Cmder, putty, git-bash.exe
 // Not support: windows cmd.exe, powerShell.exe
