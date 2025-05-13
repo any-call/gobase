@@ -1,4 +1,4 @@
-//go:build darwin || linux
+//go:build darwin || linux || android
 
 package myos
 
@@ -32,6 +32,20 @@ func GetDeviceIdentifier() (string, error) {
 			return "", err
 		}
 		return strings.TrimSpace(string(output)), nil
+
+	case "android":
+		cmd := exec.Command("getprop", "ro.serialno")
+		output, err := cmd.Output()
+		if err != nil || len(output) == 0 {
+			// 备选项
+			cmd2 := exec.Command("getprop", "ro.boot.serialno")
+			output, err = cmd2.Output()
+			if err != nil {
+				return "", err
+			}
+		}
+		return strings.TrimSpace(string(output)), nil
 	}
-	return "", fmt.Errorf("unsupported platform")
+
+	return "", fmt.Errorf("unsupported platform:%s", runtime.GOOS)
 }
