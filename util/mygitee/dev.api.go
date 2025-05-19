@@ -46,7 +46,7 @@ func (self *developerApi) ListTags(owner string, repo string, page int) (list []
 	return list, nil
 }
 
-func (self *developerApi) GetZipFile(owner string, repo string, tagName string, zipFilePath string) error {
+func (self *developerApi) GetZipFile(owner string, repo string, tagName string, zipFilePath string, timeout time.Duration) error {
 	urlStr := fmt.Sprintf("https://gitee.com/api/v5/repos/%s/%s/zipball", owner, repo)
 	param := url.Values{}
 	param.Add("access_token", self.token)
@@ -54,7 +54,7 @@ func (self *developerApi) GetZipFile(owner string, repo string, tagName string, 
 		param.Add("ref", tagName)
 	}
 
-	return mynet.GetQuery(urlStr, param, time.Second*10, func(ret []byte, httpCode int) error {
+	return mynet.GetQuery(urlStr, param, timeout, func(ret []byte, httpCode int) error {
 		if httpCode != http.StatusOK {
 			return errors.New(string(ret))
 		}
