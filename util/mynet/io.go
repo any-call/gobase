@@ -2,7 +2,6 @@ package mynet
 
 import (
 	"context"
-	"github.com/any-call/gobase/util/mylog"
 	"io"
 	"time"
 )
@@ -20,12 +19,12 @@ type (
 func copyHalfClose(dst io.Writer, src io.Reader) (int64, error) {
 	defer func() {
 		if c, ok := dst.(closeWriter); ok {
-			mylog.Info("enter close writer 1")
+			//mylog.Info("enter close writer 1")
 			_ = c.CloseWrite()
 		}
 
 		if c, ok := src.(closeReader); ok {
-			mylog.Info("enter close writer 2")
+			//mylog.Info("enter close writer 2")
 			_ = c.CloseRead()
 		}
 	}()
