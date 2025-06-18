@@ -3,6 +3,7 @@ package mynet
 import (
 	"errors"
 	"fmt"
+	"github.com/any-call/gobase/frame/myctrl"
 	"github.com/any-call/gobase/util/mylog"
 	"github.com/any-call/gobase/util/mysocks5"
 	"io"
@@ -36,7 +37,8 @@ func (self httpProxyUtil) GetTargetAddr(req *http.Request) string {
 	return ret
 }
 
-func (self httpProxyUtil) HandleHttpProxy(w http.ResponseWriter, r *http.Request, specLocalIp string, wrapCb RateLimitCB) (int64, int64, error) {
+func (self httpProxyUtil) HandleHttpProxy(w http.ResponseWriter, r *http.Request, specLocalIp string,
+	leftWrapCb RateLimitCB, rightWrapCb RateLimitCB) (int64, int64, error) {
 	targetAddr := self.GetTargetAddr(r)
 	var dstConn net.Conn
 	var err error
@@ -82,13 +84,21 @@ func (self httpProxyUtil) HandleHttpProxy(w http.ResponseWriter, r *http.Request
 	}()
 
 	//// 双向数据转发
-	if wrapCb != nil {
-		return Relay(wrapCb(clientConn), wrapCb(dstConn))
-	}
-	return Relay(clientConn, dstConn)
+	return Relay(myctrl.ObjFun(func() io.ReadWriter {
+		if leftWrapCb == nil {
+			return clientConn
+		}
+		return leftWrapCb(clientConn)
+
+	}), myctrl.ObjFun(func() io.ReadWriter {
+		if rightWrapCb == nil {
+			return dstConn
+		}
+		return rightWrapCb(dstConn)
+	}))
 }
 
-func (self httpProxyUtil) HandleHttpsProxy(w http.ResponseWriter, r *http.Request, specLocalIp string, wrapCb RateLimitCB) (int64, int64, error) {
+func (self httpProxyUtil) HandleHttpsProxy(w http.ResponseWriter, r *http.Request, specLocalIp string, leftWrapCb RateLimitCB, rightWrapCb RateLimitCB) (int64, int64, error) {
 	targetAddr := self.GetTargetAddr(r)
 	var dstConn net.Conn
 	var err error
@@ -131,13 +141,22 @@ func (self httpProxyUtil) HandleHttpsProxy(w http.ResponseWriter, r *http.Reques
 		mylog.Debugf("write err:: %v", err)
 	}
 
-	if wrapCb != nil {
-		return Relay(wrapCb(clientConn), wrapCb(dstConn))
-	}
 	// 双向数据转发
-	return Relay(clientConn, dstConn)
+	return Relay(myctrl.ObjFun(func() io.ReadWriter {
+		if leftWrapCb == nil {
+			return clientConn
+		}
+		return leftWrapCb(clientConn)
+
+	}), myctrl.ObjFun(func() io.ReadWriter {
+		if rightWrapCb == nil {
+			return dstConn
+		}
+		return rightWrapCb(dstConn)
+	}))
 }
-func (self httpProxyUtil) HandleHttpsProxyWithTimeout(w http.ResponseWriter, r *http.Request, specLocalIp string, timeout time.Duration, wrapCb RateLimitCB) (int64, int64, error) {
+func (self httpProxyUtil) HandleHttpsProxyWithTimeout(w http.ResponseWriter, r *http.Request, specLocalIp string, timeout time.Duration,
+	leftWrapCb RateLimitCB, rightWrapCb RateLimitCB) (int64, int64, error) {
 	targetAddr := self.GetTargetAddr(r)
 	var dstConn net.Conn
 	var err error
@@ -180,13 +199,22 @@ func (self httpProxyUtil) HandleHttpsProxyWithTimeout(w http.ResponseWriter, r *
 		mylog.Debugf("write err:: %v", err)
 	}
 
-	if wrapCb != nil {
-		return RelayWithTimeout(wrapCb(clientConn), wrapCb(dstConn), timeout)
-	}
 	// 双向数据转发
-	return RelayWithTimeout(clientConn, dstConn, timeout)
+	return RelayWithTimeout(myctrl.ObjFun(func() io.ReadWriter {
+		if leftWrapCb == nil {
+			return clientConn
+		}
+		return leftWrapCb(clientConn)
+
+	}), myctrl.ObjFun(func() io.ReadWriter {
+		if rightWrapCb == nil {
+			return dstConn
+		}
+		return rightWrapCb(dstConn)
+	}), timeout)
 }
-func (self httpProxyUtil) HandleSocks5Proxy(w http.ResponseWriter, r *http.Request, socks5SrvAddr, socks5Username, socksPwd string, wrapCb RateLimitCB) (int64, int64, error) {
+func (self httpProxyUtil) HandleSocks5Proxy(w http.ResponseWriter, r *http.Request, socks5SrvAddr, socks5Username, socksPwd string,
+	leftWrapCb RateLimitCB, rightWrapCb RateLimitCB) (int64, int64, error) {
 	targetStr := self.GetTargetAddr(r)
 	targetAddr := mysocks5.ParseAddr(targetStr)
 	if targetAddr == nil {
@@ -234,15 +262,23 @@ func (self httpProxyUtil) HandleSocks5Proxy(w http.ResponseWriter, r *http.Reque
 		_, _ = clientConn.Write([]byte("HTTP/1.1 200 Connection Established\r\n\r\n"))
 	}
 
-	if wrapCb != nil {
-		return Relay(wrapCb(clientConn), wrapCb(dstConn))
-	}
 	// 双向数据转发
-	return Relay(clientConn, dstConn)
+	return Relay(myctrl.ObjFun(func() io.ReadWriter {
+		if leftWrapCb == nil {
+			return clientConn
+		}
+		return leftWrapCb(clientConn)
+
+	}), myctrl.ObjFun(func() io.ReadWriter {
+		if rightWrapCb == nil {
+			return dstConn
+		}
+		return rightWrapCb(dstConn)
+	}))
 }
 
 func (self httpProxyUtil) HandleSocks5ProxyWithTimeout(w http.ResponseWriter, r *http.Request,
-	socks5SrvAddr, socks5Username, socksPwd string, timeout time.Duration, wrapCb RateLimitCB) (int64, int64, error) {
+	socks5SrvAddr, socks5Username, socksPwd string, timeout time.Duration, leftWrapCb RateLimitCB, rightWrapCb RateLimitCB) (int64, int64, error) {
 	targetStr := self.GetTargetAddr(r)
 	targetAddr := mysocks5.ParseAddr(targetStr)
 	if targetAddr == nil {
@@ -290,9 +326,17 @@ func (self httpProxyUtil) HandleSocks5ProxyWithTimeout(w http.ResponseWriter, r 
 		_, _ = clientConn.Write([]byte("HTTP/1.1 200 Connection Established\r\n\r\n"))
 	}
 
-	if wrapCb != nil {
-		return RelayWithTimeout(wrapCb(clientConn), wrapCb(dstConn), timeout)
-	}
 	// 双向数据转发
-	return RelayWithTimeout(clientConn, dstConn, timeout)
+	return RelayWithTimeout(myctrl.ObjFun(func() io.ReadWriter {
+		if leftWrapCb == nil {
+			return clientConn
+		}
+		return leftWrapCb(clientConn)
+
+	}), myctrl.ObjFun(func() io.ReadWriter {
+		if rightWrapCb == nil {
+			return dstConn
+		}
+		return rightWrapCb(dstConn)
+	}), timeout)
 }
