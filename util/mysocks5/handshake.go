@@ -115,9 +115,14 @@ func ConnToSocks5(addr Addr, remoteAddr string, authfn func() (userName, passwor
 		return nil, fmt.Errorf("连接 SOCKS5 代理服务器失败:%v", err)
 	}
 
+	var username, password string
+	if authfn != nil { //存在
+		username, password = authfn()
+	}
+
 	//建立链接
 	_, err = conn.Write(myctrl.ObjFun(func() []byte {
-		if authfn == nil {
+		if username == "" && password == "" {
 			return []byte{5, 1, 0}
 		}
 
@@ -148,13 +153,13 @@ func ConnToSocks5(addr Addr, remoteAddr string, authfn func() (userName, passwor
 	}
 
 	if response[1] == 2 { //服务端需求用户名与密码认证
-		if authfn == nil {
+		if username == "" && password == "" {
 			defer func() {
 				_ = conn.Close()
 			}()
 			return nil, fmt.Errorf("SOCKS5 需求用户密码认证")
 		}
-		username, password := authfn()
+
 		//mylog.Debug("用户名:", username, ";password:", password)
 		// 发送用户名/密码认证信息
 		auth := make([]byte, 3+len(username)+len(password))
