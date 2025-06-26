@@ -213,7 +213,7 @@ func (self httpProxyUtil) HandleHttpsProxyWithTimeout(w http.ResponseWriter, r *
 		return rightWrapCb(dstConn)
 	}), timeout)
 }
-func (self httpProxyUtil) HandleSocks5Proxy(w http.ResponseWriter, r *http.Request, socks5SrvAddr, socks5Username, socksPwd string,
+func (self httpProxyUtil) HandleSocks5Proxy(w http.ResponseWriter, r *http.Request, dialTimeoutSec int, socks5SrvAddr, socks5Username, socksPwd string,
 	leftWrapCb RateLimitCB, rightWrapCb RateLimitCB) (int64, int64, error) {
 	targetStr := self.GetTargetAddr(r)
 	targetAddr := mysocks5.ParseAddr(targetStr)
@@ -224,7 +224,7 @@ func (self httpProxyUtil) HandleSocks5Proxy(w http.ResponseWriter, r *http.Reque
 
 	var dstConn net.Conn
 	var err error
-	dstConn, err = mysocks5.ConnToSocks5(targetAddr, socks5SrvAddr, func() (userName, password string) {
+	dstConn, err = mysocks5.ConnToSocks5(targetAddr, dialTimeoutSec, socks5SrvAddr, func() (userName, password string) {
 		return socks5Username, socksPwd
 	})
 
@@ -277,7 +277,7 @@ func (self httpProxyUtil) HandleSocks5Proxy(w http.ResponseWriter, r *http.Reque
 	}))
 }
 
-func (self httpProxyUtil) HandleSocks5ProxyWithTimeout(w http.ResponseWriter, r *http.Request,
+func (self httpProxyUtil) HandleSocks5ProxyWithTimeout(w http.ResponseWriter, r *http.Request, dialTimeoutSec int,
 	socks5SrvAddr, socks5Username, socksPwd string, timeout time.Duration, leftWrapCb RateLimitCB, rightWrapCb RateLimitCB) (int64, int64, error) {
 	targetStr := self.GetTargetAddr(r)
 	targetAddr := mysocks5.ParseAddr(targetStr)
@@ -288,7 +288,7 @@ func (self httpProxyUtil) HandleSocks5ProxyWithTimeout(w http.ResponseWriter, r 
 
 	var dstConn net.Conn
 	var err error
-	dstConn, err = mysocks5.ConnToSocks5(targetAddr, socks5SrvAddr, func() (userName, password string) {
+	dstConn, err = mysocks5.ConnToSocks5(targetAddr, dialTimeoutSec, socks5SrvAddr, func() (userName, password string) {
 		return socks5Username, socksPwd
 	})
 
