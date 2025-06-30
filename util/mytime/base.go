@@ -1,6 +1,7 @@
 package mytime
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -85,4 +86,66 @@ func CurrEndOfDay() time.Time {
 
 func UnixNano(nanoSec int64) time.Time {
 	return time.Unix(nanoSec/1_000_000_000, nanoSec%1_000_000_000)
+}
+
+func HumanizeTime(t time.Time) string {
+	now := time.Now()
+	diff := now.Sub(t)
+
+	if diff < time.Minute {
+		return "刚刚"
+	} else if diff < time.Hour {
+		minutes := int(diff.Minutes())
+		return fmt.Sprintf("%d 分钟前", minutes)
+	} else if diff < 24*time.Hour {
+		hours := int(diff.Hours())
+		return fmt.Sprintf("%d 小时前", hours)
+	} else if diff < 48*time.Hour {
+		return "昨天"
+	} else if diff < 72*time.Hour {
+		return "前天"
+	} else if isSameWeek(t, now) {
+		return "本周"
+	} else if isLastWeek(t, now) {
+		return "上周"
+	} else if isSameMonth(t, now) {
+		return "本月"
+	} else if isSameYear(t, now) {
+		months := int(now.Month()) - int(t.Month()) + (now.Year()-t.Year())*12
+		return fmt.Sprintf("%d 个月前", months)
+	} else {
+		years := now.Year() - t.Year()
+		return fmt.Sprintf("%d 年前", years)
+	}
+}
+
+// 判断是否是同一周
+func isSameWeek(a, b time.Time) bool {
+	yearA, weekA := a.ISOWeek()
+	yearB, weekB := b.ISOWeek()
+	return yearA == yearB && weekA == weekB
+}
+
+// 判断是否是上周
+func isLastWeek(a, b time.Time) bool {
+	yearA, weekA := a.ISOWeek()
+	yearB, weekB := b.ISOWeek()
+
+	if yearA == yearB && weekB-weekA == 1 {
+		return true
+	}
+	if yearB-yearA == 1 && weekA == 52 && weekB == 1 {
+		return true
+	}
+	return false
+}
+
+// 判断是否是同一个月
+func isSameMonth(a, b time.Time) bool {
+	return a.Year() == b.Year() && a.Month() == b.Month()
+}
+
+// 判断是否是同一年
+func isSameYear(a, b time.Time) bool {
+	return a.Year() == b.Year()
 }
