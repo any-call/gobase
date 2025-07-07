@@ -3,6 +3,7 @@ package mytime
 import (
 	"fmt"
 	"time"
+	_ "time/tzdata" // 关键：导入 tzdata ，防止部分平台没有时区库，导致的crash
 )
 
 const (
