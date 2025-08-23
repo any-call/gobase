@@ -20,6 +20,14 @@ func RemoteIP(r *http.Request) string {
 	return ip
 }
 
+func RemoteIPFromConn(c net.Conn) string {
+	ip, _, err := net.SplitHostPort(c.RemoteAddr().String())
+	if err != nil {
+		return strings.Split(c.RemoteAddr().String(), ":")[0]
+	}
+	return ip
+}
+
 func IsPublicIP(IP net.IP) bool {
 	if IP.IsLoopback() || IP.IsLinkLocalMulticast() || IP.IsLinkLocalUnicast() {
 		return false
