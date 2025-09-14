@@ -16,9 +16,10 @@ func New(opts ...Option) *logger {
 }
 
 type logger struct {
-	opt       *options
-	mu        sync.Mutex
-	entryPool *sync.Pool
+	opt        *options
+	mu         sync.Mutex
+	entryPool  *sync.Pool
+	disableLog bool //写日志开关
 }
 
 func (l *logger) SetOptions(opts ...Option) {
@@ -43,51 +44,92 @@ func (l *logger) Writer() io.Writer {
 	return l
 }
 
+func (l *logger) SetDisableLog(b bool) {
+	l.disableLog = b
+}
+
 func (l *logger) Debug(args ...interface{}) {
+	if l.disableLog {
+		return
+	}
 	l.entry().write(DebugLevel, FmtEmptySeparate, args...)
 }
 
 func (l *logger) Info(args ...interface{}) {
+	if l.disableLog {
+		return
+	}
 	l.entry().write(InfoLevel, FmtEmptySeparate, args...)
 }
 
 func (l *logger) Warn(args ...interface{}) {
+	if l.disableLog {
+		return
+	}
 	l.entry().write(WarnLevel, FmtEmptySeparate, args...)
 }
 
 func (l *logger) Error(args ...interface{}) {
+	if l.disableLog {
+		return
+	}
 	l.entry().write(ErrorLevel, FmtEmptySeparate, args...)
 }
 
 func (l *logger) Panic(args ...interface{}) {
+	if l.disableLog {
+		return
+	}
 	l.entry().write(PanicLevel, FmtEmptySeparate, args...)
 }
 
 func (l *logger) Fatal(args ...interface{}) {
+	if l.disableLog {
+		return
+	}
 	l.entry().write(FatalLevel, FmtEmptySeparate, args...)
 }
 
 func (l *logger) Debugf(format string, args ...interface{}) {
+	if l.disableLog {
+		return
+	}
 	l.entry().write(DebugLevel, format, args...)
 }
 
 func (l *logger) Infof(format string, args ...interface{}) {
+	if l.disableLog {
+		return
+	}
+
 	l.entry().write(InfoLevel, format, args...)
 }
 
 func (l *logger) Warnf(format string, args ...interface{}) {
+	if l.disableLog {
+		return
+	}
 	l.entry().write(WarnLevel, format, args...)
 }
 
 func (l *logger) Errorf(format string, args ...interface{}) {
+	if l.disableLog {
+		return
+	}
 	l.entry().write(ErrorLevel, format, args...)
 }
 
 func (l *logger) Panicf(format string, args ...interface{}) {
+	if l.disableLog {
+		return
+	}
 	l.entry().write(PanicLevel, format, args...)
 }
 
 func (l *logger) Fatalf(format string, args ...interface{}) {
+	if l.disableLog {
+		return
+	}
 	l.entry().write(FatalLevel, format, args...)
 }
 
@@ -139,51 +181,55 @@ func InitFatalLevel(en bool) *logger {
 	return std.InitLevel(FatalLevel, en)
 }
 
+func DisableLog(b bool) {
+	std.SetDisableLog(b)
+}
+
 // std logger
 func Debug(args ...interface{}) {
-	std.entry().write(DebugLevel, FmtEmptySeparate, args...)
+	std.Debug(args...)
 }
 
 func Info(args ...interface{}) {
-	std.entry().write(InfoLevel, FmtEmptySeparate, args...)
+	std.Info(args...)
 }
 
 func Warn(args ...interface{}) {
-	std.entry().write(WarnLevel, FmtEmptySeparate, args...)
+	std.Warn(args...)
 }
 
 func Error(args ...interface{}) {
-	std.entry().write(ErrorLevel, FmtEmptySeparate, args...)
+	std.Error(args...)
 }
 
 func Panic(args ...interface{}) {
-	std.entry().write(PanicLevel, FmtEmptySeparate, args...)
+	std.Panic(args...)
 }
 
 func Fatal(args ...interface{}) {
-	std.entry().write(FatalLevel, FmtEmptySeparate, args...)
+	std.Fatal(args...)
 }
 
 func Debugf(format string, args ...interface{}) {
-	std.entry().write(DebugLevel, format, args...)
+	std.Debugf(format, args...)
 }
 
 func Infof(format string, args ...interface{}) {
-	std.entry().write(InfoLevel, format, args...)
+	std.Infof(format, args...)
 }
 
 func Warnf(format string, args ...interface{}) {
-	std.entry().write(WarnLevel, format, args...)
+	std.Warnf(format, args...)
 }
 
 func Errorf(format string, args ...interface{}) {
-	std.entry().write(ErrorLevel, format, args...)
+	std.Errorf(format, args...)
 }
 
 func Panicf(format string, args ...interface{}) {
-	std.entry().write(PanicLevel, format, args...)
+	std.Panicf(format, args...)
 }
 
 func Fatalf(format string, args ...interface{}) {
-	std.entry().write(FatalLevel, format, args...)
+	std.Fatalf(format, args...)
 }
