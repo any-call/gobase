@@ -40,3 +40,7 @@ func (self *product[DATA]) ReceiveBy(handler HandleFunc[DATA]) {
 		}
 	}
 }
+
+func (self *product[DATA]) DataLen() int { //返回 channel 中已缓存的数据数量
+	return len(self.ch)
+}

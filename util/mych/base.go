@@ -10,5 +10,6 @@ type (
 		SendBy(valid ValidFunc[DATA], data DATA)
 		Receive() DATA
 		ReceiveBy(handler HandleFunc[DATA])
+		DataLen() int
 	}
 )
