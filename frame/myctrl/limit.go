@@ -8,7 +8,7 @@ type goLimiter struct {
 	runNum  *atomic.Int32
 }
 
-func NewGolimiter(goNum int) *goLimiter {
+func NewGolimiter(goNum int) Golimiter {
 	if goNum <= 0 {
 		goNum = 1
 	}
@@ -36,4 +36,8 @@ func (self *goLimiter) End() {
 
 func (self *goLimiter) Number() int32 {
 	return self.runNum.Load()
+}
+
+func (self *goLimiter) MaxNumber() int {
+	return self.maxNum
 }

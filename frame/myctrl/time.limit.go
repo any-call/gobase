@@ -77,3 +77,7 @@ func (self *goTimeLimiter) Number() int32 {
 
 	return 0
 }
+
+func (self *goTimeLimiter) MaxNumber() int32 {
+	return self.maxNum
+}

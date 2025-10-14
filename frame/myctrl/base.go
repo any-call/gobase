@@ -10,12 +10,14 @@ type (
 		Begin()
 		End()
 		Number() int32
+		MaxNumber() int
 	}
 
 	GoTimelimiter interface {
 		Begin()
 		End()
 		Number() int32
+		MaxNumber() int32
 	}
 )
 
