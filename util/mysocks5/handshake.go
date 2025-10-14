@@ -110,7 +110,7 @@ func Handshake(rw io.ReadWriter, authFn func(username, password string) bool) (A
 //| 1  |  1  | X'00' |  1   | Variable |    2     |
 //+----+-----+-------+------+----------+----------+
 
-func ConnToSocks5(addr Addr, dialTimeoutSec int, remoteAddr string, authfn func() (userName, password string)) (net.Conn, error) {
+func ConnToSocks5(addr Addr, dialTimeoutSec int, remoteAddr string, authfn func() (userName, password string), dialCtrl myctrl.Golimiter) (net.Conn, error) {
 	if dialTimeoutSec < 0 {
 		dialTimeoutSec = 0
 	}
@@ -118,7 +118,16 @@ func ConnToSocks5(addr Addr, dialTimeoutSec int, remoteAddr string, authfn func(
 		Timeout: time.Duration(dialTimeoutSec) * time.Second, // 5 秒超时
 	}
 
-	conn, err := d.Dial("tcp", remoteAddr)
+	var conn net.Conn
+	var err error
+	if dialCtrl != nil {
+		dialCtrl.Begin()
+		conn, err = d.Dial("tcp", remoteAddr)
+		dialCtrl.End()
+	} else {
+		conn, err = d.Dial("tcp", remoteAddr)
+	}
+
 	if err != nil {
 		return nil, fmt.Errorf("连接 SOCKS5 代理服务器失败:%v", err)
 	}
