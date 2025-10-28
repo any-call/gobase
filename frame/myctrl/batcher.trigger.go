@@ -19,6 +19,10 @@ type BatchTrigger[T any] struct {
 }
 
 func NewBatchTrigger[T any](maxSize int, interval time.Duration, reportFn func([]T)) *BatchTrigger[T] {
+	return NewBatchTriggerWithLen(maxSize, interval, maxSize*4, reportFn)
+}
+
+func NewBatchTriggerWithLen[T any](maxSize int, interval time.Duration, inputChLen int, reportFn func([]T)) *BatchTrigger[T] {
 	if maxSize <= 0 {
 		maxSize = 100
 	}
@@ -26,12 +30,16 @@ func NewBatchTrigger[T any](maxSize int, interval time.Duration, reportFn func([
 		interval = time.Minute
 	}
 
+	if inputChLen < maxSize {
+		inputChLen = maxSize * 2
+	}
+
 	bt := &BatchTrigger[T]{
 		maxSize:  maxSize,
 		interval: interval,
 		reportFn: reportFn,
 		// 缓冲区自动计算：2~5倍 maxSize，根据实际压力可调整
-		inputCh: make(chan T, maxSize*4),
+		inputCh: make(chan T, inputChLen),
 		stopCh:  make(chan struct{}),
 		timer:   time.NewTicker(interval),
 	}
