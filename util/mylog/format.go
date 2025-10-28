@@ -43,8 +43,10 @@ func (f *TextFormatter) Format(e *Entry) error {
 		content += fmt.Sprintf(e.Format, e.Args...)
 	}
 
-	if style, ok := levelStyleMapping[e.Level]; ok {
-		content = style(content)
+	if !e.logger.opt.disableColors {
+		if style, ok := levelStyleMapping[e.Level]; ok {
+			content = style(content)
+		}
 	}
 
 	e.Buffer.WriteString(content)
@@ -81,7 +83,9 @@ func (f *JsonFormatter) Format(e *Entry) error {
 
 		var content string
 		if style, ok := levelStyleMapping[e.Level]; ok {
-			content = style(string(b))
+			if !e.logger.opt.disableColors {
+				content = style(string(b))
+			}
 		} else {
 			content = string(b)
 		}
@@ -107,8 +111,10 @@ func (f *JsonFormatter) Format(e *Entry) error {
 		break
 	}
 
-	if style, ok := levelStyleMapping[e.Level]; ok {
-		content = style(content)
+	if !e.logger.opt.disableColors {
+		if style, ok := levelStyleMapping[e.Level]; ok {
+			content = style(content)
+		}
 	}
 
 	e.Buffer.WriteString(content)

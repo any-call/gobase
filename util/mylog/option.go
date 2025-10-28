@@ -12,6 +12,7 @@ type options struct {
 	stdLevel      Level
 	formatter     Formatter
 	disableCaller bool
+	disableColors bool
 }
 
 type Option func(*options)
@@ -46,6 +47,12 @@ func initOptions(opts ...Option) (o *options) {
 func WithOutput(output io.Writer) Option {
 	return func(o *options) {
 		o.output = output
+	}
+}
+
+func WithDisableColor(en bool) Option {
+	return func(o *options) {
+		o.disableColors = en
 	}
 }
 
