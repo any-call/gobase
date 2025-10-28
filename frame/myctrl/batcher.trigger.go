@@ -62,7 +62,7 @@ func (b *BatchTrigger[T]) loop() {
 	}
 }
 
-func (b *BatchTrigger[T]) Add(item any) {
+func (b *BatchTrigger[T]) Add(item T) {
 	select {
 	case b.inputCh <- item:
 	default:
