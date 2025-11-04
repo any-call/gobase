@@ -228,14 +228,14 @@ func ConnToSocks5(addr Addr, dialTimeoutSec int, remoteAddr string, authfn func(
 		defer func() {
 			_ = conn.Close()
 		}()
-		return nil, fmt.Errorf("SOCKS5 读取出错:%v", err)
+		return nil, fmt.Errorf("SOCKS5 读取出错:%v to %s", err, addr.String())
 	}
 
 	if buf[0] != 5 || buf[1] != 0 {
 		defer func() {
 			_ = conn.Close()
 		}()
-		return nil, fmt.Errorf("SOCKS5 响应错误：%v", buf[:n])
+		return nil, fmt.Errorf("SOCKS5 响应错误：%v to %s", buf[:n], addr.String())
 	}
 
 	return conn, nil
