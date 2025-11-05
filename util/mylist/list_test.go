@@ -1,6 +1,7 @@
 package mylist
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -30,4 +31,13 @@ func TestList(t *testing.T) {
 
 	aa := list.TakeHeadN(20)
 	t.Log("list3 :", list, ",aa", aa)
+}
+
+func TestList_Range(t *testing.T) {
+	l := Range(18100, 18099)
+	for i, _ := range l {
+		fmt.Println(i, l[i])
+	}
+
+	t.Log("ok")
 }
