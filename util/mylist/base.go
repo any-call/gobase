@@ -7,6 +7,18 @@ func Prepend[E any](slice []E, element E) []E {
 	return append([]E{element}, slice...)
 }
 
+func Range[T int | int8 | int16 | int32 | int64 | float32 | float64](start, end T) []T {
+	if end < start {
+		return []T{}
+	}
+	n := int(end - start + 1)
+	out := make([]T, n)
+	for i := 0; i < n; i++ {
+		out[i] = start + T(i)
+	}
+	return out
+}
+
 // 求并集
 func Union[E comparable](slice1, slice2 []E) []E {
 	m := make(map[E]int)
