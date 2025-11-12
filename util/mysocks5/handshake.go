@@ -1,6 +1,7 @@
 package mysocks5
 
 import (
+	"encoding/binary"
 	"errors"
 	"fmt"
 	"github.com/any-call/gobase/frame/myctrl"
@@ -242,6 +243,115 @@ func ConnToSocks5(addr Addr, dialTimeoutSec int, remoteAddr string, authfn func(
 	return conn, nil
 }
 
+func ConnToSocks5UDP(dialTimeoutSec int, remoteAddr string, authfn func() (userName, password string), dialCtrl myctrl.Golimiter) (net.Conn, string, error) {
+	if dialTimeoutSec < 0 {
+		dialTimeoutSec = 0
+	}
+	d := net.Dialer{
+		Timeout: time.Duration(dialTimeoutSec) * time.Second, // 5 秒超时
+	}
+
+	var conn net.Conn
+	var err error
+	if dialCtrl != nil {
+		dialCtrl.Begin()
+		conn, err = d.Dial("tcp", remoteAddr)
+		dialCtrl.End()
+	} else {
+		conn, err = d.Dial("tcp", remoteAddr)
+	}
+
+	if err != nil {
+		return nil, "", fmt.Errorf("连接 SOCKS5 代理服务器失败:%v", err)
+	}
+
+	var username, password string
+	if authfn != nil { //存在
+		username, password = authfn()
+	}
+
+	//建立链接
+	_, err = conn.Write(myctrl.ObjFun(func() []byte {
+		if username == "" && password == "" {
+			return []byte{5, 1, 0}
+		}
+
+		return []byte{5, 2, 0, 2}
+	}))
+	if err != nil {
+		defer func() {
+			_ = conn.Close()
+		}()
+		return nil, "", fmt.Errorf("发送握手请求失败:%v", err)
+	}
+
+	//读服务端响应
+	response := make([]byte, 2)
+	_, err = conn.Read(response) // SOCKS request: VER, CMD, RSV, Addr
+	if err != nil {
+		defer func() {
+			_ = conn.Close()
+		}()
+		return nil, "", errors.New("读取握手响应失败")
+	}
+
+	if response[0] != 5 || (response[1] != 0 && response[1] != 2) {
+		defer func() {
+			_ = conn.Close()
+		}()
+		return nil, "", fmt.Errorf("SOCKS5 握手失败，代理服务器应答:%v", response)
+	}
+
+	if response[1] == 2 { //服务端需求用户名与密码认证
+		if username == "" && password == "" {
+			defer func() {
+				_ = conn.Close()
+			}()
+			return nil, "", fmt.Errorf("SOCKS5 需求用户密码认证")
+		}
+
+		//mylog.Debug("用户名:", username, ";password:", password)
+		// 发送用户名/密码认证信息
+		auth := make([]byte, 3+len(username)+len(password))
+		auth[0] = 0x01                              // 认证版本
+		auth[1] = byte(len(username))               // 用户名长度
+		copy(auth[2:], username)                    // 用户名
+		auth[2+len(username)] = byte(len(password)) // 密码长度
+		copy(auth[3+len(username):], password)      // 密码
+
+		if _, err := conn.Write(auth); err != nil {
+			defer func() {
+				_ = conn.Close()
+			}()
+			return nil, "", fmt.Errorf("发送认证信息失败:%v", err)
+		}
+
+		// 读取认证结果
+		authResponse := make([]byte, 2)
+		if _, err := conn.Read(authResponse); err != nil {
+			defer func() {
+				_ = conn.Close()
+			}()
+			return nil, "", fmt.Errorf("读取认证响应失败:%v", err)
+		}
+
+		// 检查认证结果
+		if authResponse[1] != 0x00 {
+			defer func() {
+				_ = conn.Close()
+			}()
+			return nil, "", errors.New("用户名/密码认证失败")
+		}
+	}
+
+	udpAddr, err := sendUdpAssociate(conn)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return conn, udpAddr, nil
+}
+
 // 处理客户端认证请求
 func authenticate(rw io.ReadWriter, validfn func(username, password string) bool) bool {
 	buf := make([]byte, MaxAddrLen)
@@ -356,4 +466,73 @@ func OnUDPAssociateDone(conn net.Conn) {
 			break
 		}
 	}
+}
+
+// 在握手成功后，调用切到UDP
+func sendUdpAssociate(conn net.Conn) (string, error) {
+	// 1️⃣ 发送 UDP ASSOCIATE 请求
+	req := []byte{
+		Version5, CmdUDPAssociate, 0x00, 0x01, // VER, CMD, RSV, ATYP (IPv4)
+		0x00, 0x00, 0x00, 0x00, // DST.ADDR = 0.0.0.0
+		0x00, 0x00, // DST.PORT = 0
+	}
+	if _, err := conn.Write(req); err != nil {
+		return "", fmt.Errorf("sendUdpAssociate: write failed: %v", err)
+	}
+
+	// 2️⃣ 读取响应头 (VER, REP, RSV, ATYP)
+	header := make([]byte, 4)
+	if _, err := conn.Read(header); err != nil {
+		return "", fmt.Errorf("sendUdpAssociate: read header failed: %v", err)
+	}
+	if header[0] != Version5 {
+		return "", fmt.Errorf("invalid version: %d", header[0])
+	}
+	if header[1] != 0x00 {
+		return "", fmt.Errorf("udp associate failed, REP=%02x", header[1])
+	}
+
+	atyp := header[3]
+	var addr string
+	var port uint16
+
+	switch atyp {
+	case 0x01: // IPv4
+		buf := make([]byte, 6)
+		if _, err := conn.Read(buf); err != nil {
+			return "", fmt.Errorf("read IPv4 addr failed: %v", err)
+		}
+		ip := net.IPv4(buf[0], buf[1], buf[2], buf[3])
+		port = binary.BigEndian.Uint16(buf[4:6])
+		addr = net.JoinHostPort(ip.String(), fmt.Sprintf("%d", port))
+
+	case 0x03: // 域名
+		// 读取域名长度
+		lenBuf := make([]byte, 1)
+		if _, err := conn.Read(lenBuf); err != nil {
+			return "", fmt.Errorf("read domain len failed: %v", err)
+		}
+		domainLen := int(lenBuf[0])
+		buf := make([]byte, domainLen+2)
+		if _, err := conn.Read(buf); err != nil {
+			return "", fmt.Errorf("read domain addr failed: %v", err)
+		}
+		domain := string(buf[:domainLen])
+		port = binary.BigEndian.Uint16(buf[domainLen:])
+		addr = net.JoinHostPort(domain, fmt.Sprintf("%d", port))
+
+	case 0x04: // IPv6
+		buf := make([]byte, 18)
+		if _, err := conn.Read(buf); err != nil {
+			return "", fmt.Errorf("read IPv6 addr failed: %v", err)
+		}
+		ip := net.IP(buf[0:16])
+		port = binary.BigEndian.Uint16(buf[16:18])
+		addr = net.JoinHostPort(ip.String(), fmt.Sprintf("%d", port))
+
+	default:
+		return "", fmt.Errorf("unknown ATYP: %d", atyp)
+	}
+
+	return addr, nil
 }
