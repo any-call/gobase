@@ -341,3 +341,19 @@ func HandleUdpAssociate(conn net.Conn, LitenUdpAddr string) error {
 	}
 	return nil
 }
+
+func OnUDPAssociateDone(conn net.Conn) {
+	if conn == nil {
+		return
+	}
+
+	buf := make([]byte, 1)
+	for {
+		_, err := conn.Read(buf)
+		if err != nil {
+			// 客户端断开，关闭 UDP relay
+			conn.Close()
+			break
+		}
+	}
+}
