@@ -7,6 +7,7 @@ import (
 	"github.com/any-call/gobase/util/mylog"
 	"io"
 	"net"
+	"strconv"
 	"time"
 )
 
@@ -317,3 +318,26 @@ func authenticate(rw io.ReadWriter, validfn func(username, password string) bool
 //STATUS：
 //•	0x00 表示成功。
 //•	0x01 表示失败。
+
+func HandleUdpAssociate(conn net.Conn, LitenUdpAddr string) error {
+	host, portStr, _ := net.SplitHostPort(LitenUdpAddr)
+	pport, _ := strconv.Atoi(portStr)
+	ip := net.ParseIP(host).To4()
+	if ip == nil {
+		return fmt.Errorf("invalid ip address from:%s", LitenUdpAddr)
+	}
+	resp := []byte{
+		0x05, // VER
+		0x00, // REP = succeeded
+		0x00, // RSV
+		0x01, // ATYP = IPv4
+		ip[0], ip[1], ip[2], ip[3],
+		byte(pport >> 8), byte(pport),
+	}
+
+	_, err := conn.Write(resp)
+	if err != nil {
+		return err
+	}
+	return nil
+}
