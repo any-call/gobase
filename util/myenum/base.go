@@ -5,5 +5,7 @@ type (
 		Name() string
 		Value() V
 		SetValue(value V)
+		// 新增
+		WithToken() string
 	}
 )

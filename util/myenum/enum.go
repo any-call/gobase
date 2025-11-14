@@ -1,5 +1,10 @@
 package myenum
 
+import (
+	"fmt"
+	"time"
+)
+
 type enum[V any] struct {
 	value V
 	name  string
@@ -19,4 +24,8 @@ func (self *enum[V]) Value() V {
 
 func (self *enum[V]) SetValue(value V) {
 	self.value = value
+}
+
+func (self *enum[V]) WithToken() string {
+	return fmt.Sprintf("%v@%d", self.value, time.Now().Unix())
 }
