@@ -254,7 +254,7 @@ func (self httpProxyUtil) HandleSocks5Proxy(w http.ResponseWriter, r *http.Reque
 	targetStr := self.GetTargetAddr(r)
 	targetAddr := mysocks5.ParseAddr(targetStr)
 	if targetAddr == nil {
-		http.Error(w, "Bad Request", http.StatusBadRequest)
+		http.Error(w, "Bad Request:"+targetStr, http.StatusBadRequest)
 		return 0, 0, fmt.Errorf("invalid target : %s", targetStr)
 	}
 
@@ -265,7 +265,7 @@ func (self httpProxyUtil) HandleSocks5Proxy(w http.ResponseWriter, r *http.Reque
 	}, dialCtrl)
 
 	if err != nil {
-		http.Error(w, "Bad Request", http.StatusBadRequest)
+		http.Error(w, "Bad Request:"+err.Error(), http.StatusBadRequest)
 		return 0, 0, fmt.Errorf("connect socks5 err: %v", err)
 	}
 
@@ -318,7 +318,7 @@ func (self httpProxyUtil) HandleSocks5ProxyWithTimeout(w http.ResponseWriter, r 
 	targetStr := self.GetTargetAddr(r)
 	targetAddr := mysocks5.ParseAddr(targetStr)
 	if targetAddr == nil {
-		http.Error(w, "Bad Request", http.StatusBadRequest)
+		http.Error(w, "Bad Request:"+targetStr, http.StatusBadRequest)
 		return 0, 0, fmt.Errorf("invalid target : %s", targetStr)
 	}
 
@@ -329,7 +329,7 @@ func (self httpProxyUtil) HandleSocks5ProxyWithTimeout(w http.ResponseWriter, r 
 	}, dialCtrl)
 
 	if err != nil {
-		http.Error(w, "Bad Request", http.StatusBadRequest)
+		http.Error(w, "Bad Request:"+err.Error(), http.StatusBadRequest)
 		return 0, 0, fmt.Errorf("connect socks5 err: %v", err)
 	}
 
