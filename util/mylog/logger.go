@@ -1,8 +1,11 @@
 package mylog
 
 import (
+	"fmt"
 	"io"
 	"os"
+	"strconv"
+	"strings"
 	"sync"
 	"unsafe"
 )
@@ -186,6 +189,30 @@ func DisableLog(b bool) {
 }
 
 // std logger
+func DebugKV(event string, kv ...any) {
+	std.Debug(buildLogfmt(event, kv...))
+}
+
+func InfoKV(event string, kv ...any) {
+	std.Info(buildLogfmt(event, kv...))
+}
+
+func WarnKV(event string, kv ...any) {
+	std.Warn(buildLogfmt(event, kv...))
+}
+
+func ErrorKV(event string, kv ...any) {
+	std.Error(buildLogfmt(event, kv...))
+}
+
+func PanicKV(event string, kv ...any) {
+	std.Panic(buildLogfmt(event, kv...))
+}
+
+func FatalKV(event string, kv ...any) {
+	std.Fatal(buildLogfmt(event, kv...))
+}
+
 func Debug(args ...interface{}) {
 	std.Debug(args...)
 }
@@ -232,4 +259,32 @@ func Panicf(format string, args ...interface{}) {
 
 func Fatalf(format string, args ...interface{}) {
 	std.Fatalf(format, args...)
+}
+
+// kv 日志格式
+func buildLogfmt(event string, kv ...any) string {
+	var b strings.Builder
+	b.WriteString("event=")
+	b.WriteString(event)
+
+	for i := 0; i < len(kv); i += 2 {
+		if i+1 >= len(kv) {
+			break
+		}
+
+		key := fmt.Sprint(kv[i])
+		val := fmt.Sprint(kv[i+1])
+
+		// 防止 value 中有空格
+		if strings.ContainsAny(val, " \t") {
+			val = strconv.Quote(val)
+		}
+
+		b.WriteString(" ")
+		b.WriteString(key)
+		b.WriteString("=")
+		b.WriteString(val)
+	}
+
+	return b.String()
 }
