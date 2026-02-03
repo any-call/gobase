@@ -63,3 +63,8 @@ func Test_trimFloat(t *testing.T) {
 	t.Log(TrimFloat(12.00))
 	t.Log(TrimFloat(12.120))
 }
+
+func TestFloatToPercent(t *testing.T) {
+	t.Log(FloatToPercent(1.30))
+	t.Log(FloatToPercent(0.305))
+}

@@ -1,6 +1,7 @@
 package myconv
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -37,4 +38,11 @@ func FloatToString[T float32 | float64](v T, precision int) string {
 
 	// 超过 precision，截断
 	return intPart + "." + decPart[:precision]
+}
+
+func FloatToPercent[T float32 | float64](v T) string {
+	s := fmt.Sprintf("%.6f", v*100) // 最多6位
+	s = strings.TrimRight(s, "0")   // 去掉尾部0
+	s = strings.TrimRight(s, ".")   // 去掉尾部点
+	return s + "%"
 }
