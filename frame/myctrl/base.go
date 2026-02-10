@@ -8,6 +8,7 @@ import (
 type (
 	Golimiter interface {
 		Do(func())
+		DoAndWait(func())
 		Number() int
 		MaxNumber() int
 	}

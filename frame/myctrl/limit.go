@@ -1,5 +1,7 @@
 package myctrl
 
+import "github.com/any-call/gobase/util/mylog"
+
 type goLimiter struct {
 	limiter chan struct{}
 	maxNum  int
@@ -22,10 +24,27 @@ func (self *goLimiter) Do(fn func()) {
 
 	go func() {
 		defer func() {
+			if r := recover(); r != nil {
+				// log panic
+				mylog.Debug("panic:", r)
+			}
 			<-self.limiter
 		}()
 		fn()
 	}()
+}
+
+func (self *goLimiter) DoAndWait(fn func()) {
+	self.limiter <- struct{}{}
+
+	defer func() {
+		if r := recover(); r != nil {
+			// log panic
+			mylog.Debug("panic:", r)
+		}
+		<-self.limiter
+	}()
+	fn()
 }
 
 func (self *goLimiter) MaxNumber() int {
