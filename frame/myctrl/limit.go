@@ -1,11 +1,8 @@
 package myctrl
 
-import "sync/atomic"
-
 type goLimiter struct {
 	limiter chan struct{}
 	maxNum  int
-	runNum  *atomic.Int32
 }
 
 func NewGolimiter(goNum int) Golimiter {
@@ -16,28 +13,25 @@ func NewGolimiter(goNum int) Golimiter {
 	ret := &goLimiter{
 		limiter: make(chan struct{}, goNum),
 		maxNum:  goNum,
-		runNum:  &atomic.Int32{},
 	}
-	ret.runNum.Add(0)
 	return ret
 }
 
-func (self *goLimiter) Begin() {
+func (self *goLimiter) Do(fn func()) {
 	self.limiter <- struct{}{}
-	self.runNum.Add(1)
-	return
-}
 
-func (self *goLimiter) End() {
-	<-self.limiter
-	self.runNum.Add(-1)
-	return
-}
-
-func (self *goLimiter) Number() int32 {
-	return self.runNum.Load()
+	go func() {
+		defer func() {
+			<-self.limiter
+		}()
+		fn()
+	}()
 }
 
 func (self *goLimiter) MaxNumber() int {
 	return self.maxNum
+}
+
+func (g *goLimiter) Number() int {
+	return len(g.limiter)
 }

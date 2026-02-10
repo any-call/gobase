@@ -23,13 +23,14 @@ func NewRateLimiter(interval time.Duration) *RateLimiter {
 // Wait 等待直到允许请求
 func (rl *RateLimiter) Wait() {
 	rl.mutex.Lock()
-	defer rl.mutex.Unlock()
-
 	now := time.Now()
 	if now.Before(rl.nextTime) {
-		sleepTime := rl.nextTime.Sub(now)
-		time.Sleep(sleepTime)
+		sleep := rl.nextTime.Sub(now)
+		rl.mutex.Unlock()
+		time.Sleep(sleep)
+		rl.mutex.Lock()
 	}
 
-	rl.nextTime = time.Now().Add(rl.interval)
+	rl.nextTime = rl.nextTime.Add(rl.interval)
+	rl.mutex.Unlock()
 }

@@ -7,9 +7,8 @@ import (
 
 type (
 	Golimiter interface {
-		Begin()
-		End()
-		Number() int32
+		Do(func())
+		Number() int
 		MaxNumber() int
 	}
 
