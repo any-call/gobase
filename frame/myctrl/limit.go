@@ -21,36 +21,62 @@ func NewGolimiter(goNum int) Golimiter {
 
 func (self *goLimiter) Do(fn func()) {
 	self.limiter <- struct{}{}
+	self.runAsync(fn)
+}
 
-	go func() {
-		defer func() {
-			if r := recover(); r != nil {
-				// log panic
-				mylog.Debug("panic:", r)
-			}
-			<-self.limiter
-		}()
-		fn()
-	}()
+func (self *goLimiter) TryDo(fn func()) bool {
+	select {
+	case self.limiter <- struct{}{}:
+		self.runAsync(fn)
+		return true
+	default:
+		return false
+	}
 }
 
 func (self *goLimiter) DoAndWait(fn func()) {
 	self.limiter <- struct{}{}
+	self.runSync(fn)
+}
 
-	defer func() {
-		if r := recover(); r != nil {
-			// log panic
-			mylog.Debug("panic:", r)
-		}
-		<-self.limiter
-	}()
-	fn()
+func (self *goLimiter) TryDoAndWait(fn func()) bool {
+	select {
+	case self.limiter <- struct{}{}:
+		self.runSync(fn)
+		return true
+	default:
+		return false
+	}
 }
 
 func (self *goLimiter) MaxNumber() int {
 	return self.maxNum
 }
 
-func (g *goLimiter) Number() int {
-	return len(g.limiter)
+func (self *goLimiter) Number() int {
+	return len(self.limiter)
+}
+
+// / 内部函数
+func (g *goLimiter) runAsync(fn func()) {
+	go func() {
+		defer g.finish()
+		if fn != nil {
+			fn()
+		}
+	}()
+}
+
+func (g *goLimiter) runSync(fn func()) {
+	defer g.finish()
+	if fn != nil {
+		fn()
+	}
+}
+
+func (g *goLimiter) finish() {
+	if r := recover(); r != nil {
+		mylog.Debug("panic:", r)
+	}
+	<-g.limiter
 }
