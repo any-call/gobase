@@ -4,12 +4,13 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"github.com/any-call/gobase/frame/myctrl"
-	"github.com/any-call/gobase/util/mylog"
 	"io"
 	"net"
 	"strconv"
 	"time"
+
+	"github.com/any-call/gobase/frame/myctrl"
+	"github.com/any-call/gobase/util/mylog"
 )
 
 const (
@@ -123,9 +124,10 @@ func ConnToSocks5(addr Addr, dialTimeoutSec int, remoteAddr string, authfn func(
 	var conn net.Conn
 	var err error
 	if dialCtrl != nil {
-		dialCtrl.Begin()
-		conn, err = d.Dial("tcp", remoteAddr)
-		dialCtrl.End()
+		dialCtrl.DoAndWait(func() {
+			conn, err = d.Dial("tcp", remoteAddr)
+		})
+
 	} else {
 		conn, err = d.Dial("tcp", remoteAddr)
 	}
@@ -254,9 +256,9 @@ func ConnToSocks5UDP(dialTimeoutSec int, remoteAddr string, authfn func() (userN
 	var conn net.Conn
 	var err error
 	if dialCtrl != nil {
-		dialCtrl.Begin()
-		conn, err = d.Dial("tcp", remoteAddr)
-		dialCtrl.End()
+		dialCtrl.DoAndWait(func() {
+			conn, err = d.Dial("tcp", remoteAddr)
+		})
 	} else {
 		conn, err = d.Dial("tcp", remoteAddr)
 	}
