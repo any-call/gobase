@@ -3,14 +3,15 @@ package mynet
 import (
 	"errors"
 	"fmt"
-	"github.com/any-call/gobase/frame/myctrl"
-	"github.com/any-call/gobase/util/mylog"
-	"github.com/any-call/gobase/util/mysocks5"
 	"io"
 	"net"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/any-call/gobase/frame/myctrl"
+	"github.com/any-call/gobase/util/mylog"
+	"github.com/any-call/gobase/util/mysocks5"
 )
 
 type RateLimitCB func(in io.ReadWriter) io.ReadWriter
@@ -50,17 +51,17 @@ func (self httpProxyUtil) HandleHttpProxy(w http.ResponseWriter, r *http.Request
 			},
 		}
 		if dialCtrl != nil {
-			dialCtrl.Begin()
-			dstConn, err = dialer.Dial("tcp", targetAddr)
-			dialCtrl.End()
+			dialCtrl.DoAndWait(func() {
+				dstConn, err = dialer.Dial("tcp", targetAddr)
+			})
 		} else {
 			dstConn, err = dialer.Dial("tcp", targetAddr)
 		}
 	} else {
 		if dialCtrl != nil {
-			dialCtrl.Begin()
-			dstConn, err = net.Dial("tcp", targetAddr)
-			dialCtrl.End()
+			dialCtrl.DoAndWait(func() {
+				dstConn, err = net.Dial("tcp", targetAddr)
+			})
 		} else {
 			dstConn, err = net.Dial("tcp", targetAddr)
 		}
@@ -122,17 +123,17 @@ func (self httpProxyUtil) HandleHttpsProxy(w http.ResponseWriter, r *http.Reques
 			},
 		}
 		if dialCtrl != nil {
-			dialCtrl.Begin()
-			dstConn, err = dialer.Dial("tcp", targetAddr)
-			dialCtrl.End()
+			dialCtrl.DoAndWait(func() {
+				dstConn, err = dialer.Dial("tcp", targetAddr)
+			})
 		} else {
 			dstConn, err = dialer.Dial("tcp", targetAddr)
 		}
 	} else {
 		if dialCtrl != nil {
-			dialCtrl.Begin()
-			dstConn, err = net.Dial("tcp", targetAddr)
-			dialCtrl.End()
+			dialCtrl.DoAndWait(func() {
+				dstConn, err = net.Dial("tcp", targetAddr)
+			})
 		} else {
 			dstConn, err = net.Dial("tcp", targetAddr)
 		}
@@ -192,17 +193,17 @@ func (self httpProxyUtil) HandleHttpsProxyWithTimeout(w http.ResponseWriter, r *
 			},
 		}
 		if dialCtrl != nil {
-			dialCtrl.Begin()
-			dstConn, err = dialer.Dial("tcp", targetAddr)
-			dialCtrl.End()
+			dialCtrl.DoAndWait(func() {
+				dstConn, err = dialer.Dial("tcp", targetAddr)
+			})
 		} else {
 			dstConn, err = dialer.Dial("tcp", targetAddr)
 		}
 	} else {
 		if dialCtrl != nil {
-			dialCtrl.Begin()
-			dstConn, err = net.Dial("tcp", targetAddr)
-			dialCtrl.End()
+			dialCtrl.DoAndWait(func() {
+				dstConn, err = net.Dial("tcp", targetAddr)
+			})
 		} else {
 			dstConn, err = net.Dial("tcp", targetAddr)
 		}
