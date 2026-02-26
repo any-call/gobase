@@ -1,5 +1,11 @@
 package mylog
 
+import (
+	"fmt"
+	"sync/atomic"
+	"time"
+)
+
 // Trace 是一次调用链的上下文（不可变链式结构）
 type Trace struct {
 	parent *Trace
@@ -64,4 +70,12 @@ func (t *Trace) Debug(event string, kv ...any) {
 
 func (t *Trace) Warn(event string, kv ...any) {
 	WarnKV(event, append(t.toKV(), kv...)...)
+}
+
+var seq uint32
+
+func NewCID() string {
+	ms := time.Now().UnixMilli()
+	n := atomic.AddUint32(&seq, 1) % 10000
+	return fmt.Sprintf("%d%04d", ms, n)
 }
