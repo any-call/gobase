@@ -33,16 +33,11 @@ func buildSSURI(n SSNode) string {
 }
 
 func BuildSSSubscription(nodes []SSNode) string {
-
 	var lines []string
-
 	for _, n := range nodes {
-
 		lines = append(lines, buildSSURI(n))
-
 	}
 
 	text := strings.Join(lines, "\n")
-
 	return base64.StdEncoding.EncodeToString([]byte(text))
 }
