@@ -291,3 +291,23 @@ func StrToNum[T int | int8 | int16 | int32 | int64 | uint | uint8 | uint16 | uin
 func TrimFloat[T float32 | float64](num T) string {
 	return strconv.FormatFloat(float64(num), 'f', -1, 64)
 }
+
+func IntSliceToStringSlice[T ~int | ~int8 | ~int16 | ~int32 | ~int64](nums []T) []string {
+	result := make([]string, len(nums))
+	for i, n := range nums {
+		result[i] = fmt.Sprintf("%d", n)
+	}
+	return result
+}
+
+func StringSliceToIntSlice[T ~int | ~int8 | ~int16 | ~int32 | ~int64](slice []string) []T {
+	result := make([]T, len(slice))
+	for i, s := range slice {
+		n, err := strconv.ParseInt(s, 10, 64)
+		if err != nil {
+			continue
+		}
+		result[i] = T(n)
+	}
+	return result
+}
