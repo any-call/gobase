@@ -60,10 +60,10 @@ func (l *FileLogger) Write(filename, level, content string, fields ...Field) {
 	}
 
 	entry := map[string]any{
-		"time":    time.Now().Format(fileTimeFormat),
-		"level":   level,
-		"message": content,
-		"caller":  shortCaller(3),
+		"timestamp": time.Now().Format(fileTimeFormat),
+		"level":     level,
+		"content":   content,
+		"caller":    shortCaller(3),
 	}
 	for _, field := range fields {
 		if field.Key != "" {
@@ -101,6 +101,15 @@ func (l *FileLogger) ReadLastNLines(filename string, n int) ([]string, error) {
 	return ReadLastNLines(path, n)
 }
 
+// KeepLastNLines 裁剪当前日志目录下指定文件，只保留最后 n 行。
+func (l *FileLogger) KeepLastNLines(filename string, n int) error {
+	l.mu.Lock()
+	path := filepath.Join(l.dir, filename)
+	l.mu.Unlock()
+
+	return KeepLastNLines(path, n)
+}
+
 // SetLogDir 设置默认文件日志目录。
 func SetLogDir(dir string) {
 	stdFileLogger.SetDir(dir)
@@ -114,6 +123,11 @@ func WriteLogFile(filename string, level string, content string, fields ...Field
 // ReadLastNLogLines 读取默认日志目录下指定文件的最后 n 行。
 func ReadLastNLogLines(filename string, n int) ([]string, error) {
 	return stdFileLogger.ReadLastNLines(filename, n)
+}
+
+// KeepLastNLogLines 裁剪默认日志目录下指定文件，只保留最后 n 行。
+func KeepLastNLogLines(filename string, n int) error {
+	return stdFileLogger.KeepLastNLines(filename, n)
 }
 
 // ReadLastNLines 读取指定文件路径的最后 n 行。
@@ -189,6 +203,31 @@ func ReadLastNLines(path string, n int) ([]string, error) {
 		lines = lines[len(lines)-n:]
 	}
 	return lines, nil
+}
+
+// KeepLastNLines 裁剪指定文件，只保留最后 n 行。
+func KeepLastNLines(path string, n int) error {
+	if n < 0 {
+		n = 0
+	}
+
+	lines, err := ReadLastNLines(path, n)
+	if err != nil {
+		return err
+	}
+
+	file, err := os.OpenFile(path, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	for _, line := range lines {
+		if _, err = file.WriteString(line + "\n"); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func shortCaller(skip int) string {
