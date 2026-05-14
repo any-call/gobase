@@ -23,11 +23,12 @@ type Field struct {
 
 // FileLogger 提供按文件写入与读取日志的能力。
 type FileLogger struct {
-	mu  sync.Mutex
-	dir string
+	mu    sync.Mutex
+	dir   string
+	files map[string]*os.File
 }
 
-var stdFileLogger = &FileLogger{dir: "logs"}
+var stdFileLogger = NewFileLogger("logs")
 
 // F 创建一个日志扩展字段。
 func F(key string, value any) Field {
@@ -39,7 +40,10 @@ func NewFileLogger(dir string) *FileLogger {
 	if dir == "" {
 		dir = "logs"
 	}
-	return &FileLogger{dir: dir}
+	return &FileLogger{
+		dir:   dir,
+		files: make(map[string]*os.File),
+	}
 }
 
 // SetDir 设置文件日志目录。
@@ -49,6 +53,7 @@ func (l *FileLogger) SetDir(dir string) {
 	}
 
 	l.mu.Lock()
+	_ = l.closeLocked()
 	l.dir = dir
 	l.mu.Unlock()
 }
@@ -79,15 +84,10 @@ func (l *FileLogger) Write(filename, level, content string, fields ...Field) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
-	if err = os.MkdirAll(l.dir, 0755); err != nil {
-		return
-	}
-
-	file, err := os.OpenFile(filepath.Join(l.dir, filename), os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	file, err := l.openLocked(filename)
 	if err != nil {
 		return
 	}
-	defer file.Close()
 
 	_, _ = file.Write(append(data, '\n'))
 }
@@ -104,10 +104,25 @@ func (l *FileLogger) ReadLastNLines(filename string, n int) ([]string, error) {
 // KeepLastNLines 裁剪当前日志目录下指定文件，只保留最后 n 行。
 func (l *FileLogger) KeepLastNLines(filename string, n int) error {
 	l.mu.Lock()
+	defer l.mu.Unlock()
+
 	path := filepath.Join(l.dir, filename)
-	l.mu.Unlock()
+	if file, ok := l.files[filename]; ok {
+		if err := file.Close(); err != nil {
+			return err
+		}
+		delete(l.files, filename)
+	}
 
 	return KeepLastNLines(path, n)
+}
+
+// Close 关闭当前文件日志器缓存的全部文件。
+func (l *FileLogger) Close() error {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
+	return l.closeLocked()
 }
 
 // SetLogDir 设置默认文件日志目录。
@@ -128,6 +143,11 @@ func ReadLastNLogLines(filename string, n int) ([]string, error) {
 // KeepLastNLogLines 裁剪默认日志目录下指定文件，只保留最后 n 行。
 func KeepLastNLogLines(filename string, n int) error {
 	return stdFileLogger.KeepLastNLines(filename, n)
+}
+
+// CloseLogFiles 关闭默认文件日志器缓存的全部文件。
+func CloseLogFiles() error {
+	return stdFileLogger.Close()
 }
 
 // ReadLastNLines 读取指定文件路径的最后 n 行。
@@ -228,6 +248,34 @@ func KeepLastNLines(path string, n int) error {
 		}
 	}
 	return nil
+}
+
+func (l *FileLogger) openLocked(filename string) (*os.File, error) {
+	if file, ok := l.files[filename]; ok {
+		return file, nil
+	}
+
+	if err := os.MkdirAll(l.dir, 0755); err != nil {
+		return nil, err
+	}
+
+	file, err := os.OpenFile(filepath.Join(l.dir, filename), os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		return nil, err
+	}
+	l.files[filename] = file
+	return file, nil
+}
+
+func (l *FileLogger) closeLocked() error {
+	var firstErr error
+	for name, file := range l.files {
+		if err := file.Close(); err != nil && firstErr == nil {
+			firstErr = err
+		}
+		delete(l.files, name)
+	}
+	return firstErr
 }
 
 func shortCaller(skip int) string {

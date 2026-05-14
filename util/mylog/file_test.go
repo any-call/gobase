@@ -49,6 +49,8 @@ func TestFileLogWriteAndReadLastNLines(t *testing.T) {
 
 func TestNewFileLogger(t *testing.T) {
 	log := NewFileLogger(t.TempDir())
+	defer log.Close()
+
 	log.Write("custom.log", "CUSTOM", "hello", F("ok", true))
 
 	lines, err := log.ReadLastNLines("custom.log", 1)
@@ -73,6 +75,8 @@ func TestNewFileLogger(t *testing.T) {
 
 func TestKeepLastNLines(t *testing.T) {
 	log := NewFileLogger(t.TempDir())
+	defer log.Close()
+
 	log.Write("keep.log", "INFO", "first")
 	log.Write("keep.log", "INFO", "second")
 	log.Write("keep.log", "INFO", "third")
@@ -95,6 +99,30 @@ func TestKeepLastNLines(t *testing.T) {
 	}
 	if first["content"] != "second" {
 		t.Fatalf("want second, got %v", first["content"])
+	}
+}
+
+func TestFileLoggerClose(t *testing.T) {
+	log := NewFileLogger(t.TempDir())
+	log.Write("close.log", "INFO", "first")
+
+	if len(log.files) != 1 {
+		t.Fatalf("want 1 cached file, got %d", len(log.files))
+	}
+	if err := log.Close(); err != nil {
+		t.Fatal(err)
+	}
+	if len(log.files) != 0 {
+		t.Fatalf("want empty cached files, got %d", len(log.files))
+	}
+
+	log.Write("close.log", "INFO", "second")
+	lines, err := log.ReadLastNLines("close.log", 2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(lines) != 2 {
+		t.Fatalf("want 2 lines, got %d", len(lines))
 	}
 }
 
