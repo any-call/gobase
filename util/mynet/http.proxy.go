@@ -39,14 +39,14 @@ func (self httpProxyUtil) GetTargetAddr(req *http.Request) string {
 }
 
 func (self httpProxyUtil) HandleHttpProxy(w http.ResponseWriter, r *http.Request, specLocalIp string,
-	leftWrapCb RateLimitCB, rightWrapCb RateLimitCB, dialCtrl myctrl.Golimiter, forceIPv4 bool) (int64, int64, error) {
+	leftWrapCb RateLimitCB, rightWrapCb RateLimitCB, dialCtrl myctrl.Golimiter, forceIPv6 bool) (int64, int64, error) {
 	targetAddr := self.GetTargetAddr(r)
 	var dstConn net.Conn
 	var err error
 
 	network := "tcp"
-	if forceIPv4 {
-		network = "tcp4"
+	if forceIPv6 {
+		network = "tcp6"
 	}
 
 	// 建立与目标服务器的 TCP 连接
@@ -118,14 +118,14 @@ func (self httpProxyUtil) HandleHttpProxy(w http.ResponseWriter, r *http.Request
 }
 
 func (self httpProxyUtil) HandleHttpsProxy(w http.ResponseWriter, r *http.Request, specLocalIp string, leftWrapCb RateLimitCB,
-	rightWrapCb RateLimitCB, dialCtrl myctrl.Golimiter, forceIPv4 bool) (int64, int64, error) {
+	rightWrapCb RateLimitCB, dialCtrl myctrl.Golimiter, forceIPv6 bool) (int64, int64, error) {
 	targetAddr := self.GetTargetAddr(r)
 	var dstConn net.Conn
 	var err error
 
 	network := "tcp"
-	if forceIPv4 {
-		network = "tcp4"
+	if forceIPv6 {
+		network = "tcp6"
 	}
 
 	// 建立与目标服务器的 TCP 连接
