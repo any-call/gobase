@@ -113,7 +113,7 @@ func Handshake(rw io.ReadWriter, authFn func(username, password string) bool) (A
 //| 1  |  1  | X'00' |  1   | Variable |    2     |
 //+----+-----+-------+------+----------+----------+
 
-func ConnToSocks5(addr Addr, dialTimeoutSec int, remoteAddr string, authfn func() (userName, password string), dialCtrl myctrl.Golimiter, forceIPv4 bool) (net.Conn, error) {
+func ConnToSocks5(addr Addr, dialTimeoutSec int, remoteAddr string, authfn func() (userName, password string), dialCtrl myctrl.Golimiter, network string) (net.Conn, error) {
 	if dialTimeoutSec < 0 {
 		dialTimeoutSec = 0
 	}
@@ -121,9 +121,8 @@ func ConnToSocks5(addr Addr, dialTimeoutSec int, remoteAddr string, authfn func(
 		Timeout: time.Duration(dialTimeoutSec) * time.Second, // 5 秒超时
 	}
 
-	network := "tcp"
-	if forceIPv4 {
-		network = "tcp4"
+	if network != "tcp" && network != "tcp4" && network != "tcp6" {
+		network = "tcp"
 	}
 
 	var conn net.Conn
@@ -250,7 +249,7 @@ func ConnToSocks5(addr Addr, dialTimeoutSec int, remoteAddr string, authfn func(
 	return conn, nil
 }
 
-func ConnToSocks5UDP(dialTimeoutSec int, remoteAddr string, authfn func() (userName, password string), dialCtrl myctrl.Golimiter, forceIPv4 bool) (net.Conn, string, error) {
+func ConnToSocks5UDP(dialTimeoutSec int, remoteAddr string, authfn func() (userName, password string), dialCtrl myctrl.Golimiter, network string) (net.Conn, string, error) {
 	if dialTimeoutSec < 0 {
 		dialTimeoutSec = 0
 	}
@@ -258,9 +257,8 @@ func ConnToSocks5UDP(dialTimeoutSec int, remoteAddr string, authfn func() (userN
 		Timeout: time.Duration(dialTimeoutSec) * time.Second, // 5 秒超时
 	}
 
-	network := "tcp"
-	if forceIPv4 {
-		network = "tcp4"
+	if network != "tcp" && network != "tcp4" && network != "tcp6" {
+		network = "tcp"
 	}
 
 	var conn net.Conn

@@ -270,7 +270,7 @@ func (self httpProxyUtil) HandleHttpsProxyWithTimeout(w http.ResponseWriter, r *
 	}), timeout)
 }
 func (self httpProxyUtil) HandleSocks5Proxy(w http.ResponseWriter, r *http.Request, dialTimeoutSec int, socks5SrvAddr, socks5Username, socksPwd string,
-	leftWrapCb RateLimitCB, rightWrapCb RateLimitCB, dialCtrl myctrl.Golimiter, forceIPv4 bool) (int64, int64, error) {
+	leftWrapCb RateLimitCB, rightWrapCb RateLimitCB, dialCtrl myctrl.Golimiter, network string) (int64, int64, error) {
 	targetStr := self.GetTargetAddr(r)
 	targetAddr := mysocks5.ParseAddr(targetStr)
 	if targetAddr == nil {
@@ -282,7 +282,7 @@ func (self httpProxyUtil) HandleSocks5Proxy(w http.ResponseWriter, r *http.Reque
 	var err error
 	dstConn, err = mysocks5.ConnToSocks5(targetAddr, dialTimeoutSec, socks5SrvAddr, func() (userName, password string) {
 		return socks5Username, socksPwd
-	}, dialCtrl, forceIPv4)
+	}, dialCtrl, network)
 
 	if err != nil {
 		http.Error(w, "Bad Request:"+err.Error(), http.StatusBadRequest)
@@ -335,7 +335,7 @@ func (self httpProxyUtil) HandleSocks5Proxy(w http.ResponseWriter, r *http.Reque
 
 func (self httpProxyUtil) HandleSocks5ProxyWithTimeout(w http.ResponseWriter, r *http.Request, dialTimeoutSec int,
 	socks5SrvAddr, socks5Username, socksPwd string, timeout time.Duration, leftWrapCb RateLimitCB, rightWrapCb RateLimitCB,
-	dialCtrl myctrl.Golimiter, forceIPv4 bool) (int64, int64, error) {
+	dialCtrl myctrl.Golimiter, network string) (int64, int64, error) {
 	targetStr := self.GetTargetAddr(r)
 	targetAddr := mysocks5.ParseAddr(targetStr)
 	if targetAddr == nil {
@@ -347,7 +347,7 @@ func (self httpProxyUtil) HandleSocks5ProxyWithTimeout(w http.ResponseWriter, r 
 	var err error
 	dstConn, err = mysocks5.ConnToSocks5(targetAddr, dialTimeoutSec, socks5SrvAddr, func() (userName, password string) {
 		return socks5Username, socksPwd
-	}, dialCtrl, forceIPv4)
+	}, dialCtrl, network)
 
 	if err != nil {
 		http.Error(w, "Bad Request:"+err.Error(), http.StatusBadRequest)
