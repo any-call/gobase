@@ -1,8 +1,11 @@
 package mycmd
 
 import (
+	"context"
+	"fmt"
 	"os/exec"
 	"strings"
+	"time"
 )
 
 func Exec(cmdStr string, configFn func(c *exec.Cmd), needSudo bool, args ...string) (output string, err error) {
@@ -37,4 +40,40 @@ func Execbash(cmdStr string, configFn func(c *exec.Cmd), needSudo bool, args ...
 	}
 
 	return Exec("bash", configFn, needSudo, "-c", strings.Join(list, " "))
+}
+
+func ExecbashWithTimeout(
+	cmdStr string,
+	configFn func(c *exec.Cmd),
+	needSudo bool,
+	timeout time.Duration,
+	args ...string,
+) (output string, err error) {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	list := []string{cmdStr}
+	list = append(list, args...)
+
+	command := strings.Join(list, " ")
+
+	var cmd *exec.Cmd
+	if needSudo {
+		cmd = exec.CommandContext(ctx, "sudo", "bash", "-c", command)
+	} else {
+		cmd = exec.CommandContext(ctx, "bash", "-c", command)
+	}
+
+	if configFn != nil {
+		configFn(cmd)
+	}
+
+	buf, err := cmd.CombinedOutput()
+	output = strings.TrimSpace(string(buf))
+
+	if ctx.Err() != nil {
+		return output, fmt.Errorf("command timeout: %w", ctx.Err())
+	}
+
+	return output, err
 }
