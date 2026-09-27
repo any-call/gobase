@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"io"
-	"net"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -20,10 +20,6 @@ type (
 )
 
 var (
-	// 每次 read 的超时，用于可以设置 read deadline 的 src（例如 net.Conn）
-	// 设为 0 表示不设置 deadline
-	readDeadline = 30 * time.Second
-
 	// 每次拷贝使用的缓冲区大小（与 io.Copy 默认 32KB 接近）
 	defaultBufSize = 32 * 1024
 )
@@ -35,56 +31,45 @@ var bufPool = sync.Pool{
 }
 
 func copyHalfClose(dst io.Writer, src io.Reader) (int64, error) {
+	return copyHalfCloseWithActivity(dst, src, nil)
+}
+
+func copyHalfCloseWithActivity(dst io.Writer, src io.Reader, onActivity func(int)) (int64, error) {
 	defer func() {
 		if c, ok := dst.(closeWriter); ok {
-			//mylog.Info("enter close writer 1")
 			_ = c.CloseWrite()
 		}
 
 		if c, ok := src.(closeReader); ok {
-			//mylog.Info("enter close writer 2")
 			_ = c.CloseRead()
 		}
 	}()
 
-	//return io.Copy(dst, src)
-	return SmartCopy(dst, src)
+	return smartCopy(dst, src, onActivity)
 }
 
-// SmartCopy：像 io.Copy 一样的签名。
-// - 优先走 src.(io.WriterTo) / dst.(io.ReaderFrom) 优化路径（零拷贝）
-// - 否则使用自定义的缓冲循环，复用缓冲池、支持读超时、半关闭等增强行为
+// SmartCopy 与 io.Copy 语义一致，并复用内部缓冲区。
+// 未启用流量观察时，优先使用 WriterTo/ReaderFrom 优化路径。
 func SmartCopy(dst io.Writer, src io.Reader) (int64, error) {
-	// 优化路径 1：src 提供 WriteTo
-	if wt, ok := src.(io.WriterTo); ok {
-		return wt.WriteTo(dst)
-	}
-	// 优化路径 2：dst 提供 ReadFrom
-	if rf, ok := dst.(io.ReaderFrom); ok {
-		return rf.ReadFrom(src)
+	return smartCopy(dst, src, nil)
+}
+
+func smartCopy(dst io.Writer, src io.Reader, onActivity func(int)) (int64, error) {
+	if onActivity == nil {
+		if wt, ok := src.(io.WriterTo); ok {
+			return wt.WriteTo(dst)
+		}
+		if rf, ok := dst.(io.ReaderFrom); ok {
+			return rf.ReadFrom(src)
+		}
 	}
 
-	// 回退路径：我们自己做循环复制
 	buf := bufPool.Get().([]byte)
 	defer bufPool.Put(buf)
 
 	var total int64
 
-	// 检测 src 是否支持 SetReadDeadline（通常为 net.Conn）
-	type setReadDeadline interface {
-		SetReadDeadline(t time.Time) error
-	}
-	var srcDeadline setReadDeadline
-	if sd, ok := src.(setReadDeadline); ok && readDeadline > 0 {
-		srcDeadline = sd
-	}
-
 	for {
-		// 如果支持 read-deadline，则提前设置（用于避免长时间阻塞）
-		if srcDeadline != nil {
-			_ = srcDeadline.SetReadDeadline(time.Now().Add(readDeadline))
-		}
-
 		nr, er := src.Read(buf)
 		if nr > 0 {
 			nwTotal := 0
@@ -92,30 +77,24 @@ func SmartCopy(dst io.Writer, src io.Reader) (int64, error) {
 				nw, ew := dst.Write(buf[nwTotal:nr])
 				if nw > 0 {
 					nwTotal += nw
+					if onActivity != nil {
+						onActivity(nw)
+					}
 				}
 				if ew != nil {
-					// 写错误直接返回（返回已写入的字节数）
 					return total + int64(nwTotal), ew
+				}
+				if nw == 0 {
+					return total + int64(nwTotal), io.ErrShortWrite
 				}
 			}
 			total += int64(nr)
 		}
 
 		if er != nil {
-			// 如果是超时且可重试（net.Error.Timeout），则继续循环读取
-			if ne, ok := er.(net.Error); ok && ne.Timeout() {
-				// 继续尝试读取
-				continue
-			}
-
 			if errors.Is(er, io.EOF) {
-				// 按 io.Copy 的语义，返回总字节数和 io.EOF（或 nil）。
-				// io.Copy 在遇 EOF 时会返回写入总字节数和 nil（注意：Read 返回 EOF，io.Copy 会将 EOF 作为结束信号并返回 nil）
-				// 为更贴近 io.Copy 行为，我们在 EOF 时返回 (total, nil)
 				return total, nil
 			}
-
-			// 其他读错误则返回
 			return total, er
 		}
 	}
@@ -131,7 +110,6 @@ func Relay(left, right io.ReadWriter) (int64, int64, error) {
 	go func() {
 		up_n, err := copyHalfClose(right, left)
 		ch <- res{up_n, err}
-		close(ch) // 完成后关闭通道
 	}()
 
 	down_n, err := copyHalfClose(left, right)
@@ -142,6 +120,105 @@ func Relay(left, right io.ReadWriter) (int64, int64, error) {
 	}
 
 	return down_n, rs.N, err
+}
+
+// RelayWithIdleTimeout 双向转发数据，并在整条连接持续无流量时退出。
+// 任一方向成功转发数据都会刷新空闲计时，适用于长时间单向下载场景。
+func RelayWithIdleTimeout(left, right io.ReadWriter, idleTimeout time.Duration) (int64, int64, error) {
+	if idleTimeout <= 0 {
+		return Relay(left, right)
+	}
+
+	type res struct {
+		down bool
+		n    int64
+		err  error
+	}
+
+	results := make(chan res, 2)
+	activity := make(chan struct{}, 1)
+	var downN, upN int64
+	var lastActivity int64
+	atomic.StoreInt64(&lastActivity, time.Now().UnixNano())
+
+	notify := func(counter *int64) func(int) {
+		return func(n int) {
+			atomic.AddInt64(counter, int64(n))
+			atomic.StoreInt64(&lastActivity, time.Now().UnixNano())
+			select {
+			case activity <- struct{}{}:
+			default:
+			}
+		}
+	}
+
+	go func() {
+		n, err := copyHalfCloseWithActivity(right, left, notify(&upN))
+		results <- res{n: n, err: err}
+	}()
+	go func() {
+		n, err := copyHalfCloseWithActivity(left, right, notify(&downN))
+		results <- res{down: true, n: n, err: err}
+	}()
+
+	timer := time.NewTimer(idleTimeout)
+	defer timer.Stop()
+	remainingIdle := func() time.Duration {
+		return idleTimeout - time.Since(time.Unix(0, atomic.LoadInt64(&lastActivity)))
+	}
+
+	completed := 0
+	for completed < 2 {
+		select {
+		case rs := <-results:
+			completed++
+			if rs.down {
+				atomic.StoreInt64(&downN, rs.n)
+			} else {
+				atomic.StoreInt64(&upN, rs.n)
+			}
+			if rs.err != nil {
+				closeRelayEndpoints(left, right)
+				return atomic.LoadInt64(&downN), atomic.LoadInt64(&upN), rs.err
+			}
+		case <-activity:
+			remaining := remainingIdle()
+			if remaining <= 0 {
+				closeRelayEndpoints(left, right)
+				return atomic.LoadInt64(&downN), atomic.LoadInt64(&upN), context.DeadlineExceeded
+			}
+			resetTimer(timer, remaining)
+		case <-timer.C:
+			remaining := remainingIdle()
+			if remaining > 0 {
+				resetTimer(timer, remaining)
+				continue
+			}
+			closeRelayEndpoints(left, right)
+			return atomic.LoadInt64(&downN), atomic.LoadInt64(&upN), context.DeadlineExceeded
+		}
+	}
+
+	return atomic.LoadInt64(&downN), atomic.LoadInt64(&upN), nil
+}
+
+func resetTimer(timer *time.Timer, timeout time.Duration) {
+	if !timer.Stop() {
+		select {
+		case <-timer.C:
+		default:
+		}
+	}
+	timer.Reset(timeout)
+}
+
+func closeRelayEndpoints(left, right io.ReadWriter) {
+	if closer, ok := left.(io.Closer); ok {
+		_ = closer.Close()
+	}
+	if closer, ok := right.(io.Closer); ok {
+		_ = closer.Close()
+	}
 }
 
 func RelayWithTimeout(left, right io.ReadWriter, timeout time.Duration) (int64, int64, error) {
@@ -160,13 +237,11 @@ func RelayWithTimeout(left, right io.ReadWriter, timeout time.Duration) (int64, 
 	go func() {
 		up_n, err := copyHalfClose(right, left)
 		upCh <- res{up_n, err}
-		close(upCh)
 	}()
 
 	go func() {
 		down_n, err := copyHalfClose(left, right)
 		downCh <- res{down_n, err}
-		close(downCh)
 	}()
 
 	var upRes, downRes res
@@ -175,6 +250,7 @@ func RelayWithTimeout(left, right io.ReadWriter, timeout time.Duration) (int64, 
 		case upRes = <-upCh:
 		case downRes = <-downCh:
 		case <-ctx.Done():
+			closeRelayEndpoints(left, right)
 			return downRes.N, upRes.N, ctx.Err()
 		}
 	}
