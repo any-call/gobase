@@ -103,7 +103,7 @@ func (self httpProxyUtil) HandleHttpProxy(w http.ResponseWriter, r *http.Request
 	}()
 
 	//// 双向数据转发
-	return Relay(myctrl.ObjFun(func() io.ReadWriter {
+	return RelayEx(myctrl.ObjFun(func() io.ReadWriter {
 		if leftWrapCb == nil {
 			return clientConn
 		}
@@ -180,7 +180,7 @@ func (self httpProxyUtil) HandleHttpsProxy(w http.ResponseWriter, r *http.Reques
 	}
 
 	// 双向数据转发
-	return Relay(myctrl.ObjFun(func() io.ReadWriter {
+	return RelayEx(myctrl.ObjFun(func() io.ReadWriter {
 		if leftWrapCb == nil {
 			return clientConn
 		}
@@ -319,7 +319,7 @@ func (self httpProxyUtil) HandleSocks5Proxy(w http.ResponseWriter, r *http.Reque
 	}
 
 	// 双向数据转发
-	return Relay(myctrl.ObjFun(func() io.ReadWriter {
+	return RelayEx(myctrl.ObjFun(func() io.ReadWriter {
 		if leftWrapCb == nil {
 			return clientConn
 		}
