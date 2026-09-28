@@ -122,6 +122,62 @@ func Relay(left, right io.ReadWriter) (int64, int64, error) {
 	return down_n, rs.N, err
 }
 
+// RelayEx 双向转发数据。
+// 正常 EOF 仅执行半关闭；非 EOF 错误会关闭两端。
+// 为保证异常时能够及时退出，left 和 right 应实现 io.Closer。
+func RelayEx(left, right io.ReadWriter) (downN, upN int64, relayErr error) {
+	type result struct {
+		isDown bool
+		n      int64
+		err    error
+	}
+
+	results := make(chan result, 2)
+
+	// 客户端 -> 目标服务器
+	go func() {
+		n, err := copyHalfClose(right, left)
+		results <- result{
+			isDown: false,
+			n:      n,
+			err:    err,
+		}
+	}()
+
+	// 目标服务器 -> 客户端
+	go func() {
+		n, err := copyHalfClose(left, right)
+		results <- result{
+			isDown: true,
+			n:      n,
+			err:    err,
+		}
+	}()
+
+	for completed := 0; completed < 2; completed++ {
+		rs := <-results
+
+		if rs.isDown {
+			downN = rs.n
+		} else {
+			upN = rs.n
+		}
+
+		// EOF 是正常半关闭，继续等待另一个方向。
+		if rs.err == nil || errors.Is(rs.err, io.EOF) {
+			continue
+		}
+
+		// 明确异常才关闭两端。
+		if relayErr == nil {
+			relayErr = rs.err
+			closeRelayEndpoints(left, right)
+		}
+	}
+
+	return downN, upN, relayErr
+}
+
 // RelayWithIdleTimeout 双向转发数据，并在整条连接持续无流量时退出。
 // 任一方向成功转发数据都会刷新空闲计时，适用于长时间单向下载场景。
 func RelayWithIdleTimeout(left, right io.ReadWriter, idleTimeout time.Duration) (int64, int64, error) {
